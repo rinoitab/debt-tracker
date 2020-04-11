@@ -1,4 +1,4 @@
-import 'package:debttracker/screen/dashboard.dart';
+import 'package:debttracker/page/main/dashboard.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(Root());

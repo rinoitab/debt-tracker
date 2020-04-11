@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Debt {
 
   final String id;
   final String debtor;
-  final DateTime date;
-  final double amount;
+  final Timestamp date;
+  final int amount;
   final String desc;
   final int term;
   final int type;

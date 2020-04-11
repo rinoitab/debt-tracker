@@ -30,7 +30,8 @@ Widget yearlyEarnings(BuildContext context) {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // Header
+
+              // * header
               Container(
                 height: 50.0,
                 child: Text(
@@ -41,7 +42,7 @@ Widget yearlyEarnings(BuildContext context) {
 
               SizedBox(height: 5.0),
 
-              // Data
+              // * return graph based on data list
               Row(children: <Widget>[
                 Container(
                   height: 50.0,

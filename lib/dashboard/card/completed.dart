@@ -14,7 +14,8 @@ Widget completed (BuildContext context) {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // Header
+
+              // * card header
               Container(
                 height: 50.0,
                 child: Text(
@@ -25,7 +26,7 @@ Widget completed (BuildContext context) {
 
               SizedBox(height: 20.0),
 
-              // Data
+              // * card data
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[

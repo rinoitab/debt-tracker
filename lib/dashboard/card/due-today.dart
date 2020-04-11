@@ -1,4 +1,4 @@
-import 'package:debttracker/screen/list/due-today-list.dart';
+import 'package:debttracker/page/main/due-today.dart';
 import 'package:debttracker/shared/constant.dart';
 import 'package:flutter/material.dart';
 
@@ -15,8 +15,7 @@ Widget dueToday(BuildContext context) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DueTodayList(),
-            )
+              builder: (context) => DueToday())
           );
         },
         child: Padding(
@@ -24,7 +23,8 @@ Widget dueToday(BuildContext context) {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                // Header
+
+                // * header
                 Container(
                   height: 50.0,
                   child: Text(
@@ -35,7 +35,7 @@ Widget dueToday(BuildContext context) {
 
                 SizedBox(height: 20.0),
 
-                // Data
+                // * data
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[

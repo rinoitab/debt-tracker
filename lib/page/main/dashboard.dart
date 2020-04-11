@@ -4,7 +4,7 @@ import 'package:debttracker/dashboard/card/monthly-earnings.dart';
 import 'package:debttracker/dashboard/card/overdue.dart';
 import 'package:debttracker/dashboard/card/pending.dart';
 import 'package:debttracker/dashboard/card/yearly-earnings.dart';
-import 'package:debttracker/dashboard/searhbox.dart';
+import 'package:debttracker/dashboard/searchbox.dart';
 import 'package:debttracker/dashboard/floating-menu.dart';
 import 'package:flutter/material.dart';
 

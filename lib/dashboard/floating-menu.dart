@@ -10,6 +10,8 @@ Widget floatingMenu (BuildContext context) {
     animatedIcon: AnimatedIcons.menu_close,
     backgroundColor: Color(0xff99b898),
     children: [
+
+      // * floating action button for adding new debtor
       SpeedDialChild(
         child: Icon(Icons.person_add),
         label: 'Add Debtor',
@@ -23,6 +25,8 @@ Widget floatingMenu (BuildContext context) {
           );
         }
       ),
+
+      // * floating action button for adding new debt
       SpeedDialChild(
         child: Icon(Icons.note_add),
         label: 'Add Debt',
@@ -36,6 +40,8 @@ Widget floatingMenu (BuildContext context) {
           );
         }
       ),
+
+      // * floating action button for adding new payment
       SpeedDialChild(
         child: Icon(Icons.payment),
         label: 'Add Payment',

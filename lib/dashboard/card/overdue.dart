@@ -14,7 +14,8 @@ Widget overdue (BuildContext context) {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // Header
+
+              // * header
               Container(
                 height: 50.0,
                 child: Text(
@@ -25,7 +26,7 @@ Widget overdue (BuildContext context) {
 
               SizedBox(height: 20.0),
 
-              // Data
+              // * data
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
