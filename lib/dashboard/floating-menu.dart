@@ -1,6 +1,6 @@
-import 'package:debttracker/screen/new-debt.dart';
-import 'package:debttracker/screen/new-debtor.dart';
-import 'package:debttracker/screen/new-payment.dart';
+import 'package:debttracker/page/main/new-debt.dart';
+import 'package:debttracker/page/main/new-debtor.dart';
+import 'package:debttracker/page/main/new-payment.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 

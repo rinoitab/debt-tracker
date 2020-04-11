@@ -1,5 +1,5 @@
 import 'package:debttracker/model/debt.dart';
-import 'package:debttracker/screen/debtor-detail-page.dart';
+import 'package:debttracker/page/main/debtor-detail-page.dart';
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart';
 import 'package:intl/intl.dart';

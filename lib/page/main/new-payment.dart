@@ -1,4 +1,4 @@
-import 'package:debttracker/screen/form/new-payment-form.dart';
+import 'package:debttracker/page/form/new-payment-form.dart';
 import 'package:flutter/material.dart';
 
 class NewPayment extends StatefulWidget {

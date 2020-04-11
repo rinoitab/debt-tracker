@@ -21,6 +21,8 @@ class _DebtorFormState extends State<DebtorForm> {
     autovalidate: true,
     child: new ListView(
       children: <Widget>[
+
+        // * debtor name
         new TextFormField(
           controller: _name,
           decoration: InputDecoration(
@@ -44,6 +46,8 @@ class _DebtorFormState extends State<DebtorForm> {
           },
         ),
         SizedBox(height: 15.0),
+
+        // * debtor contact number
         new TextFormField(
           controller: _contact,
           decoration: InputDecoration(
@@ -68,6 +72,8 @@ class _DebtorFormState extends State<DebtorForm> {
           },
         ),
         SizedBox(height: 15.0),
+
+        // * debtor address
         new TextFormField(
           controller: _address,
           decoration: InputDecoration(
@@ -86,6 +92,8 @@ class _DebtorFormState extends State<DebtorForm> {
           ),
         ),
         SizedBox(height: 15.0),
+
+        // * debtor co-maker
         new TextFormField(
           controller: _comaker,
           decoration: InputDecoration(
@@ -104,6 +112,8 @@ class _DebtorFormState extends State<DebtorForm> {
           ),
         ),
         SizedBox(height: 15.0),
+
+        // * debtor alternate contact number
         new TextFormField(
           controller: _altcontact,
           decoration: InputDecoration(

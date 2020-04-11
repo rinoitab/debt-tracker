@@ -15,3 +15,4 @@ const dashboardListLeading =
 // * list from dashboard subtitle style
 const dashboardListSubtitle = 
   TextStyle(fontSize: 15.0, fontWeight: FontWeight.normal);
+
