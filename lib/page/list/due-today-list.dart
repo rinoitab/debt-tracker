@@ -13,16 +13,16 @@ class _DueTodayListState extends State<DueTodayList> {
   @override
   Widget build(BuildContext context) {
 
-    final debts = Provider.of<List<Debt>>(context);
+    final debt = Provider.of<List<Debt>>(context);
 
-    if (debts == null) {
+    if (debt == null) {
       return Loading();
     } else {
       return ListView.builder (
-      itemCount: debts.length,
+      itemCount: debt.length,
       itemBuilder: (context, index) {
-        if (debts == null) return Loading(); 
-        return DueTodayTile(debt: debts[index]);
+        if (debt == null) return Loading(); 
+        return DueTodayTile(debt: debt[index]);
       });
     }
   }

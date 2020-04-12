@@ -8,7 +8,7 @@ class DueToday extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamProvider<List<Debt>>.value(
-        value: AccessLayer().debts,
+        value: AccessLayer().duetoday,
         child: Scaffold(
         appBar: AppBar(title: Text('Due Today')),
         body: DueTodayList(),

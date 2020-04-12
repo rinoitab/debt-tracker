@@ -8,5 +8,5 @@ class Debtor {
   final int cocontact;
 
   Debtor({this.id, this.name, this.address, this.comaker, this.contact, this.cocontact});
-  
+
 }

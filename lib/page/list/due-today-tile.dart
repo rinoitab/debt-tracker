@@ -1,5 +1,5 @@
 import 'package:debttracker/model/debt.dart';
-import 'package:debttracker/page/main/debtor-detail-page.dart';
+import 'package:debttracker/page/main/debtor-page.dart';
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart';
 import 'package:intl/intl.dart';
@@ -11,8 +11,7 @@ class DueTodayTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DateTime date = debt.date.toDate();
-    var formattedDate = new DateFormat("MMM d, yyyy").format(date);
+    var date = new DateFormat("MMM d, yyyy").format(debt.date);
     final cur = new NumberFormat.simpleCurrency(name: 'PHP');
 
     return Card(
@@ -20,7 +19,7 @@ class DueTodayTile extends StatelessWidget {
           children: <Widget>[
             // * display name of debtor
             new ListTile(
-              leading: Text(debt.debtor,
+              leading: Text(debt.name,
                     style: dashboardListLeading),
             
             // * display debt information
@@ -28,25 +27,27 @@ class DueTodayTile extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
-                  Text(formattedDate.toString(),
+                  Text(date.toString(),
                     style: dashboardListSubtitle,
                     textAlign: TextAlign.end),
-                  Text(cur.format(debt.amount),
+                  Text(cur.format(debt.installment),
                     style: dashboardListSubtitle,
                     textAlign: TextAlign.end),
                   Text(debt.desc,
                     style: dashboardListSubtitle,
                     textAlign: TextAlign.end),
               ]),
-            onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => DebtorDetails(),
-                  settings: RouteSettings(
-                    arguments: debt.debtor, // ! pass debtor id from debt table
-                  )),
-            );
+            onTap: () async {
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => DebtorDetails(),
+                    settings: RouteSettings(
+                      arguments: debt.debtorId, // ? pass debtor id from debt table
+                    )),
+              );
+              
           },
         )],
       )
