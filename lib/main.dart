@@ -1,10 +1,9 @@
-import 'package:debttracker/page/main/dashboard.dart';
 import 'package:flutter/material.dart';
+import 'package:debttracker/ui/dashboard/dashboard.dart';
 
-void main() => runApp(Root());
+void main() => runApp(DebtTracker());
 
-class Root extends StatelessWidget {
-  String date = DateTime.now().toString();
+class DebtTracker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {

@@ -1,0 +1,67 @@
+[
+    {
+        "id": "JASD8ASDC",
+        "debtorId": "ASD8FJCAK3",
+        "date": "2020-03-01 12:00:00.000000",
+        "amount": 50000,
+        "adjustmentAmount": 52500,
+        "installmentAmount": 5250,
+        "desc": "iPhone XS",
+        "term": 5,
+        "type": 2,
+        "markup": 5,
+        "isCompleted": false
+    },
+    {
+        "id": "9ASDNJASDJ",
+        "debtorId": "HID8FASDF",
+        "date": "2020-03-15 12:00:00.000000",
+        "amount": 51500,
+        "adjustmentAmount": 54075,
+        "installmentAmount": 4506.25,
+        "desc": "Samsung Galaxy S10+",
+        "term": 6,
+        "type": 2,
+        "markup": 5,
+        "isCompleted": false
+    },
+    {
+        "id": "7ASDCJKAKC",
+        "debtorId": "HID8FASDF",
+        "date": "2020-03-15 12:00:00.000000",
+        "amount": 78900,
+        "adjustmentAmount": 82845,
+        "installmentAmount": 6903.75,
+        "desc": "Macbook Pro 13",
+        "term": 6,
+        "type": 2,
+        "markup": 5,
+        "isCompleted": false
+    },
+    {
+        "id": "9ASDFAKADC",
+        "debtorId": "HID8FASDF",
+        "date": "2020-03-15 12:00:00.000000",
+        "amount": 35300,
+        "adjustmentAmount": 37065,
+        "installmentAmount": 3088.75,
+        "desc": "NIKON AF-S Nikkor 20mm Lens",
+        "term": 6,
+        "type": 2,
+        "markup": 5,
+        "isCompleted": false
+    },
+    {
+        "id": "9ASDCJAKCAE",
+        "debtorId": "ONASD92HC",
+        "date": "2020-03-16 12:00:00.000000",
+        "amount": 2000,
+        "adjustmentAmount": 2100,
+        "installmentAmount": 420,
+        "desc": "PC Tuff 1box",
+        "term": 2.5,
+        "type": 2,
+        "markup": 5,
+        "isCompleted": false
+    }
+]
