@@ -1,9 +1,10 @@
-import 'package:debttracker/ui/detail/debt.dart';
 import 'package:flutter/material.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:intl/intl.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 
 Widget debtList(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
+    final cur = new NumberFormat.simpleCurrency(name: 'PHP');
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 15),
@@ -13,90 +14,91 @@ Widget debtList(BuildContext context) {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30)
         ),
-        child: Column(
+        child: ExpansionTile(
+          leading: CircleAvatar(
+            backgroundColor: Color(0xffe84a5f),
+            radius: 25,
+            child: Icon(Icons.warning,
+              color: Colors.white,),
+          ),
+          title: Text('Macbook Pro 2017 256gb',
+            style: TextStyle(
+              fontWeight: FontWeight.bold
+            )),
+          subtitle: Text('Jan 5, 2020'),
+          trailing: CircularPercentIndicator(
+            radius: 50,
+            percent: 0.6,
+            circularStrokeCap: CircularStrokeCap.round,
+            backgroundColor: Colors.grey[200],
+            progressColor: Color(0xffe84a5f),
+            animation: true,
+            animationDuration: 3000,
+            center: Text('60%'),),
           children: <Widget>[
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.red[400],
-                child: Icon(Icons.report_problem,
-                  color: Colors.white),
+            Container(
+              padding: EdgeInsets.only(bottom: 10),
+              width: width,
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: width * 0.35,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: <Widget>[
+                        Text('Amount',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14)),
+                        Text('Installment',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14)),
+                        Text('Balance',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14)),
+                        Text('Last Payment',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14))
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 20),
+                  Container(
+                    width: width * 0.5,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(cur.format(50000).toString(),
+                          style: TextStyle(
+                            fontSize: 14)),
+                        Text(cur.format(5000).toString() + ' for 6 MO',
+                          style: TextStyle(
+                            fontSize: 14)),
+                        Text(cur.format(34000).toString() + ' / ' + cur.format(64000).toString(),
+                          style: TextStyle(
+                            fontSize: 14)),
+                        Text('Mar 15, 2020',
+                          style: TextStyle(
+                            fontSize: 14))
+                      ],
+                    ),
+                  ),
+                ], 
               ),
-              title: Container(
-                width: width * 0.5,
-                child: new Text('Incidunt consequuntur labore Minima et accusantium et ',
-                  overflow: TextOverflow.visible,
-                  maxLines: 2,
-                  style: new TextStyle(
-                      color: Colors.black87, fontSize: 18.0, fontWeight: FontWeight.bold)),
-              ),
-              subtitle: new Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    new Text('Jan 5, 2010',
-                      style: new TextStyle(
-                          fontSize: 15.0, fontWeight: FontWeight.normal),
-                      textAlign: TextAlign.end),
-                    SizedBox(height: 5),
-                    new LinearPercentIndicator(
-                      percent: 0.8,
-                      width: width * 0.6,
-                      linearStrokeCap: LinearStrokeCap.roundAll,
-                      linearGradient: LinearGradient(
-                        colors: [Colors.red[500], Colors.red[200]]),
-                      backgroundColor: Colors.grey[200],
-                    )
-                  ]),
-              onTap: () {
-                Navigator.push(
-                  context, 
-                  MaterialPageRoute(
-                    builder: (context) => DebtDetail()
-                  ));
-              },
             ),
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.green[400],
-                child: Icon(Icons.done,
-                  color: Colors.white),
-              ),
-              title: Container(
-                width: width * 0.5,
-                child: new Text('Incidunt consequuntur labore Minima et accusantium et ',
-                  overflow: TextOverflow.visible,
-                  maxLines: 2,
-                  style: new TextStyle(
-                      color: Colors.black87, fontSize: 18.0, fontWeight: FontWeight.bold)),
-              ),
-              subtitle: new Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    new Text('Apr 15, 2020',
-                      style: new TextStyle(
-                          fontSize: 15.0, fontWeight: FontWeight.normal),
-                      textAlign: TextAlign.end),
-                    SizedBox(height: 5),
-                    new LinearPercentIndicator(
-                      percent: 1,
-                      width: width * 0.6,
-                      linearStrokeCap: LinearStrokeCap.roundAll,
-                      linearGradient: LinearGradient(
-                        colors: [Colors.green[400], Colors.green[200]]),
-                      backgroundColor: Colors.grey[200],
-                    )
-                  ]),
-              onTap: () {
-                Navigator.push(
-                  context, 
-                  MaterialPageRoute(
-                    builder: (context) => DebtDetail()
-                  ));
-              }
-            ),
+            Text('Details',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+                color: Color(0xffe84a5f)
+              )),
+            SizedBox(height: 20)
           ],
-        ),
+        )
       )
     );
 }
