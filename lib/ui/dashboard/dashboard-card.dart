@@ -1,306 +1,160 @@
-import 'package:debttracker/data/access-payable.dart';
-import 'package:debttracker/model/payables/payables-viewmodel.dart';
-import 'package:debttracker/ui/list/completed.dart';
-import 'package:debttracker/ui/list/due-today.dart';
-import 'package:debttracker/ui/list/monthly-earnings.dart';
-import 'package:debttracker/ui/list/overdue.dart';
-import 'package:debttracker/ui/list/pending.dart';
+import 'package:debttracker/model/dashboard-model.dart';
+import 'package:debttracker/ui/dashboard/dashboard-chart.dart';
+import 'package:debttracker/ui/dashboard/dashboard-list.dart';
 import 'package:flutter/material.dart';
+import 'package:debttracker/shared/constant.dart' as constant;
 import 'package:flutter_sparkline/flutter_sparkline.dart';
 import 'package:intl/intl.dart';
 
-// todo: should show debt with payables due today
-Widget dueToday(BuildContext context) {
-  double width = (MediaQuery.of(context).size.width / 2) - 30;
-  double height = (MediaQuery.of(context).size.height / 4) - 60;
-
-  return Container(
-    height: height,
-    width: width,
-    child: GestureDetector(
-      onTap: () async {
-          PayablesList payable = await loadPayable();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DueToday(payable: payable)
-            ));
-        },
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
-        color: new Color(0xff99b898),
-        child: dashboardCard(context, 'Due Today', '23', Icons.perm_identity)
-      ),
-    )
-  );
+class DashboardCard extends StatefulWidget {
+  @override
+  _DashboardCardState createState() => _DashboardCardState();
 }
 
-// todo: should show count of debt with overdue payables
-Widget overdue(BuildContext context) {
-  double width = (MediaQuery.of(context).size.width / 2) - 30;
-  double height = (MediaQuery.of(context).size.height / 4) - 60;
+class _DashboardCardState extends State<DashboardCard> {
 
-  return Container(
-    height: height,
-    width: width,
-    child: GestureDetector(
-      onTap: () async {
-          PayablesList payable = await loadPayable();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Overdue(payable: payable)
-            ));
-        },
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
-        color: new Color(0xffe84a5f),
-        child: dashboardCard(context, 'Overdue', '12', Icons.report)
-      ),
-    )
-  );
-}
+  @override
+  Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
 
-// todo: show count of debts where isCompleted == false
-Widget pending(BuildContext context) {
-  double width = (MediaQuery.of(context).size.width / 2) - 30;
-  double height = (MediaQuery.of(context).size.height / 4) - 60;
+    Dashboard dashboard = Dashboard();
 
-  return Container(
-    height: height,
-    width: width,
-    child: GestureDetector(
-      onTap: () async {
-          PayablesList payable = await loadPayable();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Pending(payable: payable)
-            ));
-        },
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
-        color: new Color(0xffff847c),
-        child: dashboardCard(context, 'Pending', '23', Icons.money_off)
-      ),
-    )
-  );
-}
-
-// todo: show count of debt where isCompleted == true
-Widget completed(BuildContext context) { 
-  double width = (MediaQuery.of(context).size.width / 2) - 30;
-  double height = (MediaQuery.of(context).size.height / 4) - 60;
-
-  return Container(
-    height: height,
-    width: width,
-    child: GestureDetector(
-      onTap: () async {
-          PayablesList payable = await loadPayable();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Completed(payable: payable)
-            ));
-        },
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
-        color: new Color(0xfffeceab),
-        child: dashboardCard(context, 'Completed', '49', Icons.done)
-      ),
-    )
-  );
-}
-
-// todo: should sum of payables marked as isPaid for the current month
-Widget monthlyEarnings(BuildContext context) {
-  double width = MediaQuery.of(context).size.width - 30;
-  double height = (MediaQuery.of(context).size.height / 4) - 60;
-
-  final cur = new NumberFormat.simpleCurrency(name: 'PHP');
-
-  return Container(
-    height: height,
-    width: width,
-    child: GestureDetector(
-      onTap: () async {
-          PayablesList payable = await loadPayable();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MonthlyEarnings(payable: payable)
-            ));
-        },
-      child: Card(
-        child: Padding(
-            padding: EdgeInsets.all(15.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      children: <Widget>[
+        dueToday(width, height, dashboard.dueToday, context),
+        earnings(width, height, dashboard),
+        Row(
+          children: <Widget>[
+            Column( 
               children: <Widget>[
-
-                // * header
-                Container(
-                  height: 50.0,
-                  child: Text(
-                    'Monthly Earnings',
-                    style: TextStyle(
-                      fontSize: 20.0, 
-                      fontWeight: FontWeight.bold, 
-                      color: Colors.white)
-                  ),
-                ),
-
-                SizedBox(height: 20.0),
-
-                // * data
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    Container(
-                      height: 50.0,
-                      child: Text(
-                        cur.format(58000.0).toString(),
-                        style: TextStyle(
-                          fontSize: 50.0, 
-                          fontWeight: FontWeight.bold, 
-                          color: Colors.white)
-                      ),
-                    )
-                  ],
-                )
+                width < 600 ? Container() : DashboardChart()
               ],
-            )),
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
-        color: new Color(0xff2a363b),
-      ),
-    ),
-  );
-}
+            ),
+            DashboardList()
+          ],
+        ),
+        
+      ],
+    );
+  }
 
-// todo: get sum of payables marked as isPaid per month
-Widget yearlyEarnings(BuildContext context) {
-  var amount = [
-    0.0,
-    12890.0,
-    32190.0,
-    29013.0,
-    0.0,
-    18200.0,
-    8070.0,
-    40980.0,
-    50900.0,
-    39000.0,
-    41000.0,
-    78000.0
-  ];
+  Container earnings(double width, double height, Dashboard dashboard) {
+    final cur = new NumberFormat.simpleCurrency(name: 'PHP');
 
-  double width = MediaQuery.of(context).size.width - 30;
-  double height = (MediaQuery.of(context).size.height / 4) - 60;
- 
-  return Container(
-    height: height,
-    width: width,
-    child: Card(
-      child: Padding(
-          padding: EdgeInsets.all(15.0),
+    return Container(
+        height: width > 400 ? height * 0.2 : height * 0.25,
+        width: width,
+        child: Card(
+          elevation: 0,
+          color: constant.green,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-
-              // * header
               Container(
-                height: 50.0,
-                child: Text(
-                  'Yearly Earnings',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold, 
-                    color: Colors.white),
+                padding: width > 600 ? EdgeInsets.symmetric(vertical: 20) : EdgeInsets.symmetric(vertical: 10),
+                child: Sparkline(
+                  pointsMode: PointsMode.all,
+                  pointColor: Colors.white,
+                  pointSize: 8,
+                  data: dashboard.yearlyEarnings,
+                  lineColor: Colors.white,
+                  ),
+              ),
+              Container(
+                alignment: Alignment.bottomRight,
+                padding: EdgeInsets.only(bottom: 3, right: 15),
+                height: height * 0.05, 
+                child: RichText(
+                  text: TextSpan(
+                    text: 'You earned ',
+                    style: constant.subtitle.copyWith(
+                      fontSize: (height * 0.05) * 0.4),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: '${cur.format(dashboard.monthlyEarnings)}',
+                        style: constant.subtitle.copyWith(
+                          fontWeight: FontWeight.bold),
+                        children: <TextSpan>[
+                          TextSpan(
+                            text: ' this month.',
+                            style: constant.subtitle.copyWith(
+                              fontWeight: FontWeight.normal
+                            )
+                          )
+                        ]
+                      )
+                    ]
+                  )),
+              )
+            ],
+          )
+        ),
+      );
+  }
+
+  Container dueToday(double width, double height, int count, BuildContext context) {
+    return Container(
+        width: width,
+        height: height * 0.1,
+        child: Card(
+          elevation: 0,
+          color: constant.pink,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(60)
+          ),
+          child: Row(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                child: CircleAvatar(
+                  backgroundColor: Colors.white,
+                  radius: (height * 0.1) * 0.3,
+                  child: Icon(Icons.warning,
+                    color: constant.pink),
                 ),
               ),
-
-              SizedBox(height: 5.0),
-
-              // * return graph based on data list
-              Row(children: <Widget>[
-                Container(
-                  height: 50.0,
-                  width: width - 80,
-                  child: Sparkline(
-                    data: amount,
-                    lineColor: Colors.white,
-                    pointsMode: PointsMode.all,
-                    pointSize: 10.0,
-                    pointColor: Colors.white,
-                  ),
+              Container(
+                width: width > 600 ? width * 0.78 : width * 0.6,
+                child: RichText(
+                  text: TextSpan(
+                    text: 'You have\n',
+                    style: constant.subtitle.copyWith(
+                      color: Colors.white,
+                      fontSize: (height * 0.1) * 0.18
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: '$count',
+                        style: constant.subtitle.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: (height * 0.1) * 0.2
+                        ),
+                        children: <TextSpan>[
+                        TextSpan(
+                        text: count > 1 ? ' collections today.' : ' collection today.',
+                        style: constant.subtitle.copyWith(
+                          fontWeight: FontWeight.normal,
+                          fontSize: (height * 0.1) * 0.18
+                        )
+                        )]
+                      )
+                    ]
+                  ))
+              ),
+              Container(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  
+                  child: Icon(Icons.arrow_forward_ios,
+                    color: Colors.white),
                 ),
-              ]),
+              )
             ],
-          )),
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
-      color: new Color(0xff83af9b),
-    ),
-  );
-}
-
-
-// * Widget with the Dashboard Card style
-Widget dashboardCard(BuildContext context, String header, String value, IconData icon) {
-  return Padding(
-    padding: EdgeInsets.all(15.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-
-        cardHeader(header),
-        SizedBox(height: 20.0),
-        cardValue(icon, value)
-
-      ],
-  ));
-}
-
-// * Widget for Dashboard Card Header
-Widget cardHeader(String header) {
-  return Container(
-    height: 50.0,
-    child: new Text(
-    header,
-    style: TextStyle(
-      fontSize: 20.0, 
-      fontWeight: FontWeight.bold, 
-      color: Colors.white)
-  ));
-}
-
-// * Widget for Dashboard Card Value
-Widget cardValue(IconData icon, String value) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: <Widget>[
-      Container(
-        height: 50.0,
-        child: Icon(icon,
-        size: 50.0,
-        color: Colors.white),
-      ),
-      Container(
-        height: 50.0,
-        child: Text(
-          value,
-          style: TextStyle(
-            fontSize: 50.0, 
-            fontWeight: FontWeight.bold, 
-            color: Colors.white)
+          ),
         ),
-      ),
-    ],
-  );
+      );
+  }
 }

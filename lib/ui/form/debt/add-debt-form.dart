@@ -1,6 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:debttracker/shared/dialog.dart';
+import 'package:debttracker/shared/loading.dart';
+import 'package:debttracker/view-model/debt-viewmodel.dart';
+import 'package:debttracker/view-model/debtor-viewmodel.dart';
+import 'package:debttracker/view-model/payables-viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:intl/intl.dart';
+import 'package:debttracker/business-logic/business-logic.dart';
 
 class DebtForm extends StatefulWidget {
   @override
@@ -9,17 +16,36 @@ class DebtForm extends StatefulWidget {
 
 class _DebtFormState extends State<DebtForm> {
 
-  var _debtor;
-  var _date;
-  var _ptype;
+  String _debtor;
+  String _date;
+  String _startDate;
+  String _secondDate;
+  String _ptype;
+  int _typeIndex;
 
   final _fdate = TextEditingController();
-  final _amount = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+  final _cdate = TextEditingController();
+  final _sdate = TextEditingController();
+  final _amount = TextEditingController();
   final _desc = TextEditingController();
   final _term = TextEditingController();
   final _markup = TextEditingController();
 
   final debtKey = GlobalKey<FormState>();
+  DebtorVM model = DebtorVM();
+  DebtVM debtModel = DebtVM();
+  PayablesVM payablesModel = PayablesVM();
+  BusinessLogic logic = BusinessLogic();
+
+  void clearFields() {
+    // _fdate.text = '';
+    // _amount.text = '';
+    // _desc.text = '';
+    // _term.text = '';
+    // _markup.text = '';
+    // _sdate.text = '';
+    // _cdate.text = '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +67,10 @@ class _DebtFormState extends State<DebtForm> {
           getType(),
           SizedBox(height: 15),
           getMarkup(),
+          SizedBox(height: 15),
+          getStartDate(),
+          SizedBox(height: 15),
+          getSecondDate(),
           SizedBox(height: 40),
           saveDebt()        
         ],
@@ -72,13 +102,39 @@ class _DebtFormState extends State<DebtForm> {
           elevation: 0,
           onPressed: () {
             if (debtKey.currentState.validate()) {
-              print(_debtor);
-              print(_date.toString());
-              print(_amount.text);
-              print(_desc.text);
-              print(_term.text);
-              print(_ptype);
-              print(_markup.text);
+
+              var list = logic.getPayableDates(double.parse(_term.text), _typeIndex, _startDate, _secondDate ?? '');
+              var adjustedAmt = logic.getAdjustedAmount(double.parse(_amount.text), int.parse(_markup.text));
+              var installmentAmt = logic.getInstallmentAmount(adjustedAmt, double.parse(_term.text), _typeIndex);
+              String _debtId;
+
+                debtModel.addDebt(
+                debtorId: _debtor, 
+                date: DateTime.parse(_date),
+                amount: double.parse(_amount.text),
+                desc: _desc.text,
+                term: double.parse(_term.text),
+                type: _typeIndex,
+                markup: int.parse(_markup.text),
+                adjustedAmount: adjustedAmt,
+                installmentAmount: installmentAmt)
+                .then((result) {
+                    successDialog(context, 'debt');
+                    clearFields();
+                   _debtId = result.documentID;
+                  }).catchError((e) {
+                    print(e.toString());
+                    errorDialog(context, 'debt');
+                  });
+
+              for (var i = 0; i < list.length; i++) {
+                payablesModel.addPayable(
+                  debtorId: _debtor, 
+                  debtId: _debtId,
+                  amount: installmentAmt,
+                  date: list[i]);
+              }
+              
             }
           },
         ),
@@ -90,41 +146,45 @@ class _DebtFormState extends State<DebtForm> {
   // note: Will return all Debtor in database
   // todo: connect to database 
   Widget getDebtor() {
-    List<String> _name = ['Ms. Randy Conn', 'Fidel Stamm', 'Edythe Hoeger'];
+    
 
-    return new DropdownButtonFormField(
-      value: _debtor,
-      isDense: true,
-      decoration: InputDecoration(
-        isDense: true,
-        labelText: 'Debtor',
-        hintText: 'Select debtor',
-        icon: Icon(Icons.person),
-        errorStyle: TextStyle(height: 0),
-        enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: Color(0xff99b898),
-            ),
-            borderRadius: BorderRadius.circular(24.0)),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24.0)),
-      ),
-      items: _name.map((String value) {
-        return new DropdownMenuItem<String>(
-          value: value,
-          child: new Text(value));
-      }).toList(), 
-      onChanged: (value) {
-        setState(() {
-          _debtor = value;
+    return StreamBuilder<QuerySnapshot>(
+      stream: model.fetchDebtorForDropdown(),
+      builder: (context, snap) {
+        if (!snap.hasData) return Loading();
+        return new DropdownButtonFormField(
+          value: _debtor,
+          items: snap.data.documents.map((DocumentSnapshot ds) {
+            return DropdownMenuItem<String>(
+              value: ds.documentID,
+              child: Text(ds.data['name']));
+          }).toList(),
+          isDense: true,
+          decoration: InputDecoration(
+            isDense: true,
+            icon: Icon(Icons.person),
+            errorStyle: TextStyle(height: 0),
+            enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Color(0xff99b898),
+                ),
+                borderRadius: BorderRadius.circular(24.0)),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24.0)),
+          ),
+          onChanged: (value) {
+            setState(() {
+              this._debtor = value;
+            });
+          },
+          validator: (value) {
+            if (value == null) {
+              return '';
+            }
+            return null;
         });
-      },
-      validator: (value) {
-        if (value == null) {
-          return '';
-        }
-        return null;
-    });
+      }
+    );
   }
 
   // * Date
@@ -165,6 +225,74 @@ class _DebtFormState extends State<DebtForm> {
     });
   }
 
+  Widget getStartDate() {
+    return new TextFormField(
+    controller: _cdate,
+    decoration: InputDecoration(
+      isDense: true,
+      labelText: 'Start Collection Date',
+      hintText: 'Input start of collection date',
+      icon: Icon(Icons.looks_one),
+      errorStyle: TextStyle(height: 0),
+      enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Color(0xff99b898),
+          ),
+          borderRadius: BorderRadius.circular(24.0)),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24.0)),
+    ),
+    onTap: () async {
+      DateTime date = DateTime(1900);
+      FocusScope.of(context).requestFocus(new FocusNode());
+      date = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100));
+      _startDate = date.toIso8601String();
+      _cdate.text =
+          new DateFormat("MMM d, yyyy").format(date).toString();
+    },
+    validator: (value) {
+      if (value.isEmpty) {
+        return '';
+      } return null;
+    });
+  }
+
+  Widget getSecondDate() {
+    return new TextFormField(
+    controller: _sdate,
+    decoration: InputDecoration(
+      isDense: true,
+      labelText: 'Second Collection Date',
+      hintText: 'Input second collection date',
+      icon: Icon(Icons.looks_two),
+      errorStyle: TextStyle(height: 0),
+      enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Color(0xff99b898),
+          ),
+          borderRadius: BorderRadius.circular(24.0)),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24.0)),
+    ),
+    enabled: _typeIndex == 2 ? true : false,
+    onTap: () async {
+      DateTime date = DateTime(1900);
+      FocusScope.of(context).requestFocus(new FocusNode());
+      date = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100));
+      _secondDate = date.toIso8601String();
+      _sdate.text =
+          new DateFormat("MMM d, yyyy").format(date).toString();
+    });
+  }
+
   // * Amount
   Widget getAmount() {
     return new TextFormField(
@@ -185,7 +313,7 @@ class _DebtFormState extends State<DebtForm> {
       ),
       keyboardType: TextInputType.number,
       validator: (value) {
-        if (value == null) {
+        if (value == '0.00') {
           return '';
         } return null;
       });
@@ -275,6 +403,7 @@ class _DebtFormState extends State<DebtForm> {
       onChanged: (value) {
         setState(() {
           _ptype = value;
+          _typeIndex = value != 'once a week' ? _type.indexOf(value) + 1 : 4;
         });
       },
       validator: (value) {

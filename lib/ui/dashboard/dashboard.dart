@@ -1,11 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:debttracker/shared/constant.dart' as constant;
 import 'package:debttracker/ui/dashboard/dashboard-card.dart';
 import 'package:debttracker/ui/form/debt/add-debt.dart';
 import 'package:debttracker/ui/form/debtor/add-debtor.dart';
 import 'package:debttracker/ui/form/payment/add-payment.dart';
-import 'package:flappy_search_bar/flappy_search_bar.dart';
-import 'package:flappy_search_bar/search_bar_style.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+
 
 class Dashboard extends StatefulWidget {
   @override
@@ -15,60 +15,54 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      body: SafeArea(
-        child: Container(
-          padding: EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              searchBox(),
-
-              Container(
-                padding: EdgeInsets.fromLTRB(10.0, 0, 10.0, 0),
-                child: Wrap(
-                  children: <Widget>[
-                    dueToday(context),
-                    overdue(context),
-                    monthlyEarnings(context), 
-                    yearlyEarnings(context),
-                    pending(context),
-                    completed(context)
-                  ],
-                ),
-              ),
-            ],
-          )
-        ),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        iconTheme: new IconThemeData(color: constant.green),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-
+      body: Container(
+        padding: EdgeInsets.all(10.0),
+        child: DashboardCard()
+      ),
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(right: 10.0, bottom: 15.0),
+        padding: EdgeInsets.only(right: 10.0, bottom: 10.0),
         child: floatingMenu(context),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: <Widget>[
+            ListTile(
+              leading: Icon(Icons.warning,
+                color: constant.green),
+              title: Text('Pending'),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+            ListTile(
+              leading: Icon(Icons.done,
+                color: constant.green),
+              title: Text('Completed'),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+            ListTile(
+              leading: Icon(Icons.person,
+                color: constant.green),
+              title: Text('All Debtors'),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+            ListTile(
+              leading: Icon(Icons.monetization_on,
+                color: constant.green),
+              title: Text('All Debts'),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ],
+        )
       ),
     );
   }
-}
-
-
-// * Search Box
-// todo: Add search functionality to be able to search Debtor name
-// todo: once suggested result is clicked, it should redirect to Debtor profile
-Widget searchBox() {
-  return Container(
-    height: 80.0,
-    width: double.maxFinite,
-    child: SearchBar(
-      onSearch: null,
-      onItemFound: null,
-      searchBarPadding: EdgeInsets.symmetric(horizontal: 10.0),
-      iconActiveColor: Colors.green[400],
-      searchBarStyle: SearchBarStyle(
-        borderRadius: BorderRadius.circular(30.0),
-        padding: EdgeInsets.symmetric(horizontal: 20.0),
-      ),
-    ),
-  );
 }
 
 // * Floating Menu for add functionality

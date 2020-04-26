@@ -1,16 +1,29 @@
-// todo: debtor page
-
+import 'package:debttracker/model/debtor-model.dart';
+import 'package:debttracker/shared/loading.dart';
 import 'package:debttracker/ui/detail/debt-list.dart';
 import 'package:debttracker/ui/form/debt/add-debt.dart';
 import 'package:debttracker/ui/form/debtor/add-debtor.dart';
 import 'package:debttracker/ui/form/payment/add-payment.dart';
+import 'package:debttracker/view-model/debtor-viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class DebtorPage extends StatelessWidget {
+class DebtorPage extends StatefulWidget {
+  final String id;
+  DebtorPage({this.id});
+
+  @override
+  _DebtorPageState createState() => _DebtorPageState();
+}
+
+class _DebtorPageState extends State<DebtorPage> {
+
+  DebtorVM model = DebtorVM();
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -30,21 +43,27 @@ class DebtorPage extends StatelessWidget {
           ),
         ],
         elevation: 0),
-        body: Column(
-          children: <Widget>[
-            debtorDetail(context),
-            SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                scrollDirection: Axis.vertical,
-                shrinkWrap: true,
-                itemCount: 1,
-                itemBuilder: (context, index) {
-                  return debtList(context);
-                },
-              ),
-            ),
-          ],
+        body: FutureBuilder<Debtor>(
+          future: model.getDebtor(widget.id),
+          builder: (BuildContext context, AsyncSnapshot<Debtor> snapshot) {
+          if (!snapshot.hasData) return Loading();
+            return Column(
+              children: <Widget>[
+                debtorDetail(context, snapshot.data),
+                SizedBox(height: 20),
+                Expanded(
+                  child: ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: 1,
+                    itemBuilder: (context, index) {
+                      return DebtList(debtor: snapshot.data);
+                    },
+                  ),
+                ),
+              ],
+            );
+          }
         ),
       floatingActionButton: Padding(
         padding: EdgeInsets.only(right: 10.0, bottom: 15.0),
@@ -53,7 +72,7 @@ class DebtorPage extends StatelessWidget {
     );
   }
 
-  Widget debtorDetail(BuildContext context) {
+  Widget debtorDetail(BuildContext context, Debtor debtor) {
 
     double height = MediaQuery.of(context).size.height / 4;
     double width = MediaQuery.of(context).size.width;
@@ -91,32 +110,32 @@ class DebtorPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
-              Text('Tad Ziemann',
+              Text('${debtor.name}',
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                   textAlign: TextAlign.end),
-              Text('30158 Lockman Lodge',
+              Text('${debtor.address}',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                   textAlign: TextAlign.end),
-              Text(3893187280.toString(),
+              Text('${debtor.contact}',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                   textAlign: TextAlign.end),
               SizedBox(height: 30),
-              Text('secondary contact',
+              Text(debtor.comaker.isEmpty && debtor.altcontact == 0 ? 'No secondary contact added' : 'Secondary contact',
                   style: TextStyle(
                     fontSize: 16,
                     fontStyle: FontStyle.italic,
                     color: Colors.white,
                   )),
-              Text('Elisabeth Stiedemann',
+              Text('${debtor.comaker}',
                   style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                   textAlign: TextAlign.end),
-              Text(8682986662.toString(),
+              Text(debtor.altcontact != 0 ? '${debtor.altcontact}' : '',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                   textAlign: TextAlign.end),
             ],

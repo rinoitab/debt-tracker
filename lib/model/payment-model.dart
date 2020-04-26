@@ -1,3 +1,4 @@
+
 class Payment {
 
   final String id;
@@ -8,5 +9,4 @@ class Payment {
   final double amount;
 
   Payment({this.id, this.debtorId, this.debtId, this.payableId, this.date, this.amount});
-
 }
