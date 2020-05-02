@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debttracker/model/debtor-model.dart';
 import 'package:debttracker/service/logic.dart';
 import 'package:debttracker/shared/dialog.dart';
-import 'package:debttracker/shared/loading.dart';
 import 'package:debttracker/view-model/debt-viewmodel.dart';
 import 'package:debttracker/view-model/debtor-viewmodel.dart';
 import 'package:flutter/cupertino.dart';
@@ -52,7 +51,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
           FutureBuilder<Debtor>(
             future: _debtorModel.getDebtorById(widget.debtorId),
             builder: (context, snapshot) {
-              if(!snapshot.hasData) return TinyLoading();
+              if(!snapshot.hasData) return Container();
               _debtor = snapshot.data.name;
               return TextFormField(
                 enabled: false,
@@ -119,7 +118,8 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                 });
                 _date = date.toIso8601String();
                 _dateController.text = new DateFormat("MMM d, yyyy").format(date).toString();
-            }
+            },
+            validator: (value) => value.isEmpty ? '' : null,
           ),
           SizedBox(height: 15.0),
           TextFormField(
@@ -132,6 +132,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
             onChanged: (value) {
               _amount = _amountController.numberValue;
             },
+            validator: (value) => _amountController.numberValue == 0.0 ? '' : null,
             keyboardType: TextInputType.number),
           SizedBox(height: 20.0),
           FlatButton(

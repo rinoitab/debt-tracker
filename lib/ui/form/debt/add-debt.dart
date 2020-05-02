@@ -4,16 +4,10 @@ import 'package:flutter/material.dart';
 class AddDebt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('New Debt'),
-        backgroundColor: Color(0xff99b898),
-        elevation: 0,
-      ),
-      body: Container(
-        padding: EdgeInsets.all(20.0),
-        child: DebtForm(),
-      ),
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.6,
+      padding: EdgeInsets.all(50.0),
+      child: AddDebtForm(),
     );
   }
 }

@@ -1,192 +1,214 @@
 import 'package:debttracker/shared/dialog.dart';
 import 'package:debttracker/view-model/debtor-viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:debttracker/shared/constant.dart' as constant;
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 
-class DebtorForm extends StatelessWidget {
+class AddDebtorForm extends StatefulWidget {
+  @override
+  _AddDebtorFormState createState() => _AddDebtorFormState();
+}
+
+class _AddDebtorFormState extends State<AddDebtorForm> {
+
+  final _name = TextEditingController();
+  final _contactPhone = MaskedTextController(mask: '(63) 000 000 0000');
+  final _contactLandline = MaskedTextController(mask: '000-0000');
+  final _address = TextEditingController();
+  final _comaker = TextEditingController();
+  final _altPhone = MaskedTextController(mask: '(63) 000 000 0000');
+  final _altLandline = MaskedTextController(mask: '000-0000');
+
+  final key = GlobalKey<FormState>();
+
+  int _contactOption = 0;
+  int _altOption = 0;
+  List<String> _contactValue = ['Phone', 'Landline'];
+  int _contact;
+  int _altcontact;
+
+  DebtorVM _debtorModel = DebtorVM();
+
+  void clear() {
+    _name.text = '';
+    _contactPhone.text = '';
+    _contactLandline.text = '';
+    _address.text = '';
+    _comaker.text = '';
+    _altPhone.text = '';
+    _altLandline.text = '';
+    _contactOption = 0;
+    _altOption = 0;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final debtorKey = GlobalKey<FormState>();
-
-    final _name = TextEditingController();
-    final _contact = TextEditingController();
-    final _address = TextEditingController();
-    final _comaker = TextEditingController();
-    final _altcontact = TextEditingController();
-
-    DebtorVM model = new DebtorVM();
-
-    void clearFields() {
-      _name.text = '';
-      _contact.text = '';
-      _address.text = '';
-      _comaker.text = '';
-      _altcontact.text = '';
-    }
-
-    // todo: Clean up same as Debt form
-    return new Form(
-      key: debtorKey,
+    return Form(
+      key: key,
       autovalidate: true,
-      child: new ListView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          // * Debtor Name
-          new TextFormField(
-              controller: _name,
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: 'Name',
-                hintText: 'Input name of debtor',
-                icon: Icon(Icons.person),
-                errorStyle: TextStyle(height: 0),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xff99b898),
-                    ),
-                    borderRadius: BorderRadius.circular(24.0)),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0)),
+          Text('Borrower Information',
+            style: constant.subtitle.copyWith(
+              color: constant.bluegreen,
+              fontWeight: FontWeight.bold,
+              fontSize: 25.0
+            )),
+          SizedBox(height: 20.0),
+          TextFormField(
+            controller: _name,
+            decoration: constant.form.copyWith(
+              labelText: 'Name',
+              hintText: 'Input name of borrower',
+              icon: Icon(Icons.face,
+                color: Colors.grey.shade600)),
+              validator: (value) => value.length < 3 ? '' : null
               ),
-              validator: (value) {
-                if (value.length < 2) {
-                  return '';
-                }
-                return null;
-              }),
           SizedBox(height: 15.0),
-
-          // * Contact Number
-          new TextFormField(
-              controller: _contact,
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: 'Contact Number',
-                hintText: 'Input contact number',
-                icon: Icon(Icons.phone),
-                errorStyle: TextStyle(height: 0),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xff99b898),
-                    ),
-                    borderRadius: BorderRadius.circular(24.0)),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0)),
+          Row(
+            children: <Widget>[
+              Icon(Icons.phone,
+                color: Colors.grey.shade600),
+              SizedBox(width: 15.0),
+              Expanded(
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton(
+                    value: _contactValue[_contactOption],
+                    items: _contactValue
+                      .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem(
+                        child: Text(value,
+                          style: constant.subtitle.copyWith(
+                            color: Colors.grey.shade600
+                          )),
+                        value: value
+                        );
+                    }).toList(), 
+                    onChanged: (value) {
+                      setState(() {
+                        _contactOption = _contactValue.indexOf(value);
+                      });
+                    }),
+                ),
               ),
-              validator: (value) {
-                var parseContact = int.tryParse(value);
-                if (parseContact == null) {
-                  return '';
-                }
-                return null;
-              }),
-          SizedBox(height: 15.0),
-
-          // * Address
-          new TextFormField(
-              controller: _address,
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: 'Address',
-                hintText: 'Input address',
-                icon: Icon(Icons.map),
-                errorStyle: TextStyle(height: 0),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xff99b898),
-                    ),
-                    borderRadius: BorderRadius.circular(24.0)),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0)),
-              )),
-          SizedBox(height: 15.0),
-
-          // * Co-maker
-          new TextFormField(
-              controller: _comaker,
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: 'Co-maker',
-                hintText: 'Input co-maker',
-                icon: Icon(Icons.person_add),
-                errorStyle: TextStyle(height: 0),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xff99b898),
-                    ),
-                    borderRadius: BorderRadius.circular(24.0)),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0)),
-              )),
-          SizedBox(height: 15.0),
-
-          // * Alternate Contact
-          new TextFormField(
-              controller: _altcontact,
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: 'Alternate Contact Number',
-                hintText: 'Input secondary contact number',
-                icon: Icon(Icons.phone_missed),
-                errorStyle: TextStyle(height: 0),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xff99b898),
-                    ),
-                    borderRadius: BorderRadius.circular(24.0)),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0)),
+              SizedBox(width: 10.0),
+              Expanded(
+                flex: 6,
+                child: TextFormField(
+                  controller: _contactOption == 0 ? _contactPhone : _contactLandline,
+                  decoration: constant.form.copyWith(
+                    labelText: 'Contact',
+                    hintText: 'Input contact number of borrower',
+                  ),
+                  onChanged: (value) {
+                    _contact = int.parse(value.replaceAll(RegExp(r'[^\w]'), ''));
+                  },
+                  validator: (value) => value == '(63) ' || value.isEmpty ? '' : null),
               ),
-              validator: (value) {
-                if (value.isNotEmpty) {
-                  var parseContact = int.tryParse(value);
-                  if (parseContact == null) {
-                    return '';
-                  }
-                  return null;
-                } else {
-                  return null;
-                }} 
-            ),
-          SizedBox(height: 40),
-
-          // * Save Debtor based on information provided in form
-          Center(
-              child: ButtonTheme(
-            minWidth: 200,
-            child: RaisedButton(
-              color: Color(0xff99b898),
-              padding: EdgeInsets.all(10),
-              splashColor: Colors.green,
-              animationDuration: Duration(seconds: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: new BorderRadius.circular(24.0),
+            ],
+          ),
+          SizedBox(height: 15.0),
+          TextFormField(
+            controller: _address,
+            decoration: constant.form.copyWith(
+              labelText: 'Address',
+              hintText: 'Input address of borrower',
+              icon: Icon(Icons.room,
+                color: Colors.grey.shade600))),
+          SizedBox(height: 15.0),
+          TextFormField(
+            controller: _comaker,
+            decoration: constant.form.copyWith(
+              labelText: 'Co-Borrower',
+              hintText: 'Input name of co-borrower',
+              icon: Icon(Icons.tag_faces,
+                color: Colors.grey.shade600))),
+          SizedBox(height: 15.0),
+          Row(
+            children: <Widget>[
+              Icon(Icons.voicemail,
+                color: Colors.grey.shade600),
+              SizedBox(width: 15.0),
+              Expanded(
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton(
+                    value: _contactValue[_altOption],
+                    items: _contactValue
+                      .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem(
+                        child: Text(value,
+                          style: constant.subtitle.copyWith(
+                            color: Colors.grey.shade600
+                          )),
+                        value: value
+                        );
+                    }).toList(), 
+                    onChanged: (value) {
+                      setState(() {
+                        _altOption = _contactValue.indexOf(value);
+                      });
+                    }),
+                ),
               ),
-              child: Text('Save',
-                  style: TextStyle(
-                      fontSize: 20.0,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold)),
-              elevation: 0,
-              onPressed: () {
-                if (debtorKey.currentState.validate()) {
-                  model.addDebtor(
-                    name: _name.text, 
-                    contact: int.parse(_contact.text),
-                    address: _address.text ?? '',
-                    comaker: _comaker.text ?? '',
-                    altcontact: _altcontact.text.isNotEmpty ? int.parse(_altcontact.text) : null
-                  ).then((result) {
-                    successDialog(context, _name.text);
-                    clearFields();
+              SizedBox(width: 10.0),
+              Expanded(
+                flex: 6,
+                child: TextFormField(
+                  controller: _altOption == 0 ? _altPhone : _altLandline,
+                  decoration: constant.form.copyWith(
+                    labelText: 'Alternate Contact',
+                    hintText: 'Input alternate contact number of borrower',
+                  ),
+                  onChanged: (value) {
+                    _altcontact = int.parse(value.replaceAll(RegExp(r'[^\w]'), ''));
+                    print(_altcontact);
+                  }),
+              ),
+            ],
+          ),
+          SizedBox(height: 15.0),
+          FlatButton(
+            onPressed: () {
+              if(key.currentState.validate()) {
+                _debtorModel.addDebtor(
+                  name: _name.text, 
+                  contact: _contact,
+                  address: _address.text ?? '',
+                  comaker: _comaker.text ?? '',
+                  altcontact: _altcontact != null ? _altcontact : null)
+                  .then((result) {
+                    successDialog(context, _name.text, result.documentID);
+                    clear();
                   }).catchError((e) {
+                    print(e.toString());
                     errorDialog(context, _name.text);
                   });
-                }
-              },
-            ),
-          ))
+              }
+            }, 
+            child: Card(
+              color: constant.green,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0)
+              ),
+              child: Container(
+                width: double.infinity,
+                height: 40.0,
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3.0),
+                      child: Text('Save',
+                        style: constant.subtitle.copyWith(
+                          color: constant.bluegreen, 
+                      )
+                    ),
+                  ),
+                ),
+              )),
+            ))
         ],
-      ),
-    );
+      ));
   }
 }

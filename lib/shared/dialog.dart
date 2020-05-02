@@ -1,8 +1,9 @@
+import 'package:debttracker/ui/detail/debtor.dart';
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
 import 'package:flutter/services.dart';
 
-successDialog(BuildContext context, String text) {
+successDialog(BuildContext context, String text, String id) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -16,6 +17,18 @@ successDialog(BuildContext context, String text) {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0)),
         actions: <Widget>[
+          id.isEmpty ? Container() : FlatButton(
+            child: Text('Go to Profile',
+              style: constant.subtitle.copyWith(
+                color: constant.green
+              )),
+            onPressed: () {
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (context) => DebtorPage(id: id)));
+            },
+          ),
           FlatButton(
             child: Text('OK',
               style: constant.subtitle.copyWith(

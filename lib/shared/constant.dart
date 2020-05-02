@@ -22,7 +22,7 @@ InputDecoration form = InputDecoration(
   errorStyle: TextStyle(height: 0),
   focusedBorder: OutlineInputBorder(
     borderSide: BorderSide(
-      color: pink
+      color: torquiose
       ),
     borderRadius: BorderRadius.circular(24.0)),
   enabledBorder: OutlineInputBorder(
