@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:lottie/lottie.dart';
 
-// * Loading screen 
 class Loading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: SpinKitChasingDots(
-          color: Color(0xff99b898),
-          size: 50.0
-        )
-      )
-    );
+    return Center(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.2,
+        color: Colors.white,
+        child: Lottie.network('https://assets7.lottiefiles.com/packages/lf20_yIZkqk.json')
+    ));
+  }
+}
+
+class TinyLoading extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        color: Colors.white,
+        child: Lottie.network('https://assets6.lottiefiles.com/packages/lf20_y32Rtr.json')
+    ));
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
+import 'package:flutter/services.dart';
 
 successDialog(BuildContext context, String text) {
   showDialog(
@@ -7,7 +8,7 @@ successDialog(BuildContext context, String text) {
     builder: (BuildContext context) {
       return AlertDialog(
         title: Text('Success',
-          style: constant.subtitle.copyWith(
+          style: TextStyle(
             fontWeight: FontWeight.bold
           )),
         content: Text('Added $text successfully.',
@@ -48,6 +49,44 @@ errorDialog(BuildContext context, String text) {
             child: Text('OK',
               style: constant.subtitle.copyWith(
                 color: constant.green
+              )),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          )
+        ],
+      );
+    }
+  );
+}
+
+generateReceiptDialog(BuildContext context, String text, String reference) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Generated receipt',
+          style: constant.subtitle.copyWith(
+            fontWeight: FontWeight.bold
+          )),
+        content: Text('Successfully generated payment with reference no. $reference',
+          style: constant.subtitle),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0)),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Copy to Clipboard',
+              style: constant.subtitle.copyWith(
+                color: constant.torquiose
+              )),
+            onPressed: () {
+              Clipboard.setData(new ClipboardData(text: text));
+            },
+          ),
+          FlatButton(
+            child: Text('OK',
+              style: constant.subtitle.copyWith(
+                color: constant.torquiose
               )),
             onPressed: () {
               Navigator.pop(context);

@@ -4,10 +4,10 @@ import 'package:debttracker/shared/loading.dart';
 import 'package:debttracker/view-model/debt-viewmodel.dart';
 import 'package:debttracker/view-model/debtor-viewmodel.dart';
 import 'package:debttracker/view-model/payables-viewmodel.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:intl/intl.dart';
-import 'package:debttracker/business-logic/business-logic.dart';
+import 'package:debttracker/service/logic.dart';
 
 class DebtForm extends StatefulWidget {
   @override
@@ -17,25 +17,26 @@ class DebtForm extends StatefulWidget {
 class _DebtFormState extends State<DebtForm> {
 
   String _debtor;
-  String _date;
-  String _startDate;
-  String _secondDate;
-  String _ptype;
-  int _typeIndex;
+  String _debtDate;
+  String _startCollectionDate;
+  String _secondCollectionDate;
+  String _typeDesc;
+  int _typeValue;
 
-  final _fdate = TextEditingController();
-  final _cdate = TextEditingController();
-  final _sdate = TextEditingController();
-  final _amount = TextEditingController();
-  final _desc = TextEditingController();
-  final _term = TextEditingController();
-  final _markup = TextEditingController();
+
+  final _formDebtDate = TextEditingController();
+  final _formStartCollectionDate = TextEditingController();
+  final _formSecondCollectionDate = TextEditingController();
+  final _formAmount = TextEditingController();
+  final _formDesc = TextEditingController();
+  final _formTerm = TextEditingController();
+  final _formMarkup = TextEditingController();
 
   final debtKey = GlobalKey<FormState>();
-  DebtorVM model = DebtorVM();
-  DebtVM debtModel = DebtVM();
-  PayablesVM payablesModel = PayablesVM();
-  BusinessLogic logic = BusinessLogic();
+  DebtorVM _debtorModel = DebtorVM();
+  DebtVM _debtModel = DebtVM();
+  PayablesVM _payablesModel = PayablesVM();
+  Logic _businessLogic = Logic();
 
   void clearFields() {
     // _fdate.text = '';
@@ -56,7 +57,7 @@ class _DebtFormState extends State<DebtForm> {
         children: <Widget>[
           getDebtor(),
           SizedBox(height: 15),
-          getDate(),
+          getDate(context),
           SizedBox(height: 15),
           getAmount(),
           SizedBox(height: 15),
@@ -103,19 +104,19 @@ class _DebtFormState extends State<DebtForm> {
           onPressed: () {
             if (debtKey.currentState.validate()) {
 
-              var list = logic.getPayableDates(double.parse(_term.text), _typeIndex, _startDate, _secondDate ?? '');
-              var adjustedAmt = logic.getAdjustedAmount(double.parse(_amount.text), int.parse(_markup.text));
-              var installmentAmt = logic.getInstallmentAmount(adjustedAmt, double.parse(_term.text), _typeIndex);
+              var list = _businessLogic.getPayableDates(double.parse(_formTerm.text), _typeValue, _startCollectionDate, _secondCollectionDate ?? '');
+              var adjustedAmt = _businessLogic.getAdjustedAmount(double.parse(_formAmount.text), int.parse(_formMarkup.text));
+              var installmentAmt = _businessLogic.getInstallmentAmount(adjustedAmt, double.parse(_formTerm.text), _typeValue);
               String _debtId;
 
-                debtModel.addDebt(
+              _debtModel.addDebt(
                 debtorId: _debtor, 
-                date: DateTime.parse(_date),
-                amount: double.parse(_amount.text),
-                desc: _desc.text,
-                term: double.parse(_term.text),
-                type: _typeIndex,
-                markup: int.parse(_markup.text),
+                date: DateTime.parse(_debtDate),
+                amount: double.parse(_formAmount.text),
+                desc: _formDesc.text,
+                term: double.parse(_formTerm.text),
+                type: _typeValue,
+                markup: int.parse(_formMarkup.text),
                 adjustedAmount: adjustedAmt,
                 installmentAmount: installmentAmt)
                 .then((result) {
@@ -128,7 +129,7 @@ class _DebtFormState extends State<DebtForm> {
                   });
 
               for (var i = 0; i < list.length; i++) {
-                payablesModel.addPayable(
+                _payablesModel.addPayable(
                   debtorId: _debtor, 
                   debtId: _debtId,
                   amount: installmentAmt,
@@ -149,7 +150,7 @@ class _DebtFormState extends State<DebtForm> {
     
 
     return StreamBuilder<QuerySnapshot>(
-      stream: model.fetchDebtorForDropdown(),
+      stream: _debtorModel.streamAllDebtors(),
       builder: (context, snap) {
         if (!snap.hasData) return Loading();
         return new DropdownButtonFormField(
@@ -189,9 +190,9 @@ class _DebtFormState extends State<DebtForm> {
 
   // * Date
   // note: Will pop calendar which will allow user to select date
-  Widget getDate() {
+  Widget getDate(BuildContext context) {
     return new TextFormField(
-    controller: _fdate,
+    controller: _formDebtDate,
     decoration: InputDecoration(
       isDense: true,
       labelText: 'Date',
@@ -214,9 +215,8 @@ class _DebtFormState extends State<DebtForm> {
           initialDate: DateTime.now(),
           firstDate: DateTime(2000),
           lastDate: DateTime(2100));
-      _date = date.toIso8601String();
-      _fdate.text =
-          new DateFormat("MMM d, yyyy").format(date).toString();
+      _debtDate = date.toIso8601String();
+      _formDebtDate.text = new DateFormat("MMM d, yyyy").format(date).toString();
     },
     validator: (value) {
       if (value.isEmpty) {
@@ -227,7 +227,7 @@ class _DebtFormState extends State<DebtForm> {
 
   Widget getStartDate() {
     return new TextFormField(
-    controller: _cdate,
+    controller: _formStartCollectionDate,
     decoration: InputDecoration(
       isDense: true,
       labelText: 'Start Collection Date',
@@ -250,8 +250,8 @@ class _DebtFormState extends State<DebtForm> {
           initialDate: DateTime.now(),
           firstDate: DateTime(2000),
           lastDate: DateTime(2100));
-      _startDate = date.toIso8601String();
-      _cdate.text =
+      _startCollectionDate = date.toIso8601String();
+      _formStartCollectionDate.text =
           new DateFormat("MMM d, yyyy").format(date).toString();
     },
     validator: (value) {
@@ -263,7 +263,7 @@ class _DebtFormState extends State<DebtForm> {
 
   Widget getSecondDate() {
     return new TextFormField(
-    controller: _sdate,
+    controller: _formSecondCollectionDate,
     decoration: InputDecoration(
       isDense: true,
       labelText: 'Second Collection Date',
@@ -278,7 +278,7 @@ class _DebtFormState extends State<DebtForm> {
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(24.0)),
     ),
-    enabled: _typeIndex == 2 ? true : false,
+    enabled: _typeValue == 2 ? true : false,
     onTap: () async {
       DateTime date = DateTime(1900);
       FocusScope.of(context).requestFocus(new FocusNode());
@@ -287,8 +287,8 @@ class _DebtFormState extends State<DebtForm> {
           initialDate: DateTime.now(),
           firstDate: DateTime(2000),
           lastDate: DateTime(2100));
-      _secondDate = date.toIso8601String();
-      _sdate.text =
+      _secondCollectionDate = date.toIso8601String();
+      _formSecondCollectionDate.text =
           new DateFormat("MMM d, yyyy").format(date).toString();
     });
   }
@@ -296,7 +296,7 @@ class _DebtFormState extends State<DebtForm> {
   // * Amount
   Widget getAmount() {
     return new TextFormField(
-      controller: _amount,
+      controller: _formAmount,
       decoration: InputDecoration(
         isDense: true,
         labelText: 'Amount',
@@ -322,7 +322,7 @@ class _DebtFormState extends State<DebtForm> {
   // * Description 
   Widget getDesc() {
     return new TextFormField(
-      controller: _desc,
+      controller: _formDesc,
       decoration: InputDecoration(
         isDense: true,
         labelText: 'Description',
@@ -348,7 +348,7 @@ class _DebtFormState extends State<DebtForm> {
   // todo: add word months when user inputs
   Widget getTerm() {
     return new TextFormField(
-      controller: _term,
+      controller: _formTerm,
       decoration: InputDecoration(
         isDense: true,
         labelText: 'Payment Term',
@@ -379,7 +379,7 @@ class _DebtFormState extends State<DebtForm> {
     List<String> _type = ['once a month', 'every 15th', 'once a week'];
 
     return new DropdownButtonFormField(
-      value: _ptype,
+      value: _typeDesc,
       isDense: true,
       decoration: InputDecoration(
         isDense: true,
@@ -402,8 +402,8 @@ class _DebtFormState extends State<DebtForm> {
       }).toList(), 
       onChanged: (value) {
         setState(() {
-          _ptype = value;
-          _typeIndex = value != 'once a week' ? _type.indexOf(value) + 1 : 4;
+          _typeDesc = value;
+          _typeValue = value != 'once a week' ? _type.indexOf(value) + 1 : 4;
         });
       },
       validator: (value) {
@@ -418,7 +418,7 @@ class _DebtFormState extends State<DebtForm> {
   // todo: Add % sign in text field
   Widget getMarkup() {
     return new TextFormField(
-      controller: _markup,
+      controller: _formMarkup,
       decoration: InputDecoration(
         isDense: true,
         labelText: 'Markup',

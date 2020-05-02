@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:debttracker/model/debt-model.dart';
 import 'package:debttracker/model/debtor-model.dart';
 
 class Payables {
@@ -8,6 +10,7 @@ class Payables {
   final DateTime date;
   final bool isPaid;
   final Debtor debtor;
+  final Debt debt;
 
   Payables({
     this.id,
@@ -16,7 +19,8 @@ class Payables {
     this.amount,
     this.date,
     this.isPaid,
-    this.debtor});
+    this.debtor,
+    this.debt});
 
   Map<String, dynamic> toMap() {
     return {
@@ -39,5 +43,18 @@ class Payables {
       isPaid: map['isPaid'],
       id: documentId
     );
+  }
+
+  static List<Payables> fromSnap(QuerySnapshot snap) {
+    return snap.documents.map((map) {
+      return Payables(
+      debtorId: map.data['debtorId'],
+      debtId: map['debtId'],
+      amount: map['amount'].toDouble(),
+      date: map['date'].toDate(),
+      isPaid: map['isPaid'],
+      id: map.documentID
+    );
+    }).toList();
   }
 }

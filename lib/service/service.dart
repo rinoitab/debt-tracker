@@ -13,23 +13,33 @@ class FirestoreService {
 
   // * Debtor-related Queries
   Future addDebtor(Debtor debtor) async {
-    await _debtorReference.add(debtor.toMap());
+    return await _debtorReference.add(debtor.toMap());
   }
 
-  Future<Debtor> getDebtor(String id) async {
+  Future<Debtor> getDebtorById(String id) async {
     return await _debtorReference.document(id).get().then((doc) { 
       return Debtor.fromMap(doc.data, doc.documentID);
       });
   }
 
-  Stream<QuerySnapshot> debtorForDropdown() {
+  Stream<QuerySnapshot> streamAllDebtors() {
     return _debtorReference
       .orderBy('name')
       .snapshots();
   }
 
+  Future<List<Debtor>> getAllDebtors() async {
+    var _debtor = await _debtorReference
+      .getDocuments();
+
+    return _debtor.documents
+      .map((snap) => Debtor.fromMap(snap.data, snap.documentID))
+      .toList();
+  }
+
   // * Debt-related Queries
-  Future<List<Debt>> getDebt(String id) async {
+
+  Future<List<Debt>> getDebtsById(String id) async {
     var _debt = await _debtReference
       .where('debtorId', isEqualTo: id)
       .getDocuments();
@@ -43,8 +53,36 @@ class FirestoreService {
     return await _debtReference.add(debt.toMap());
   }
 
+  Stream<QuerySnapshot> streamDebtsById(String id) {
+    return _debtReference
+      .where('debtorId', isEqualTo: id)
+      .snapshots();
+  }
+
   // * Payable-related Queries
-  Future<List<Payables>> getOverdue() async {
+
+  Future<List<Payables>> getDueToda1y() async {
+    var _due = await _payableReference
+      .where('date', isGreaterThanOrEqualTo: DateTime.now().subtract(Duration(days: 1)))
+      .where('date',isLessThanOrEqualTo: DateTime.now().add(Duration(days: 1)))
+      .getDocuments();
+    
+    return _due.documents
+      .map((snap) => Payables.fromMap(snap.data, snap.documentID))
+      .toList();
+  }
+
+  Stream<List<Payables>> getDueToday() {
+    var _due = _payableReference
+      .where('date', isGreaterThanOrEqualTo: DateTime.now().subtract(Duration(days: 1)))
+      .where('date',isLessThanOrEqualTo: DateTime.now().add(Duration(days: 1)))
+      .snapshots();
+
+    return _due.map((snap) => Payables.fromSnap(snap));
+    
+  }
+
+  Future<List<Payables>> getOverduePayables() async {
     var _overdue = await _payableReference
       .where('date', isLessThan: Timestamp.now())
       .getDocuments();
@@ -55,6 +93,6 @@ class FirestoreService {
   }
 
   Future addPayable(Payables payables) async {
-    await _payableReference.add(payables.toMap());
+    return await _payableReference.add(payables.toMap());
   }
 }

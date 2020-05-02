@@ -8,7 +8,7 @@ class DebtorVM extends Debtor {
   final FirestoreService _service = FirestoreService();
 
   Future addDebtor({@required String name, @required int contact, String address, String comaker, int altcontact}) async {
-    await _service.addDebtor(
+    return await _service.addDebtor(
       Debtor(
         name: name, 
         contact: contact,
@@ -19,12 +19,16 @@ class DebtorVM extends Debtor {
     );
   }
 
-  Future<Debtor> getDebtor(String id) async {
-    return _service.getDebtor(id);
+  Future<Debtor> getDebtorById(String id) async {
+    return _service.getDebtorById(id);
   }
 
-  Stream<QuerySnapshot> fetchDebtorForDropdown() {
-    return _service.debtorForDropdown();
+  Future<List<Debtor>> getAllDebtors() async {
+    return _service.getAllDebtors();
+  }
+
+  Stream<QuerySnapshot> streamAllDebtors() {
+    return _service.streamAllDebtors();
   }
 
 }

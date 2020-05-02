@@ -7,7 +7,6 @@ import 'package:debttracker/ui/form/payment/add-payment.dart';
 import 'package:debttracker/view-model/debtor-viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class DebtorPage extends StatefulWidget {
   final String id;
@@ -19,7 +18,7 @@ class DebtorPage extends StatefulWidget {
 
 class _DebtorPageState extends State<DebtorPage> {
 
-  DebtorVM model = DebtorVM();
+  DebtorVM _debtorModel = DebtorVM();
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +43,7 @@ class _DebtorPageState extends State<DebtorPage> {
         ],
         elevation: 0),
         body: FutureBuilder<Debtor>(
-          future: model.getDebtor(widget.id),
+          future: _debtorModel.getDebtorById(widget.id),
           builder: (BuildContext context, AsyncSnapshot<Debtor> snapshot) {
           if (!snapshot.hasData) return Loading();
             return Column(
@@ -91,7 +90,7 @@ class _DebtorPageState extends State<DebtorPage> {
           left: 40,
           child: GestureDetector(
             onTap: () {
-              launch('tel:9085905297');
+
             },
             child: CircleAvatar(
               backgroundColor: Colors.white,

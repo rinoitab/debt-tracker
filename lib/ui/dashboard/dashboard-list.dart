@@ -1,12 +1,11 @@
-import 'package:debttracker/model/dashboard-model.dart';
 import 'package:debttracker/model/payables-model.dart';
 import 'package:debttracker/shared/loading.dart';
-import 'package:debttracker/ui/detail/debtor.dart';
+import 'package:debttracker/ui/form/payment/add-payment.dart';
 import 'package:debttracker/view-model/payables-viewmodel.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
 import 'package:intl/intl.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class DashboardList extends StatefulWidget {
   @override
@@ -14,133 +13,101 @@ class DashboardList extends StatefulWidget {
 }
 
 class _DashboardListState extends State<DashboardList> {
-  
-  Dashboard dashboard = Dashboard();
-  PayablesVM overdue = PayablesVM();
-  Future<List<Payables>> payable;
-
-  @override
-  void initState() {
-    super.initState();
-    payable = overdue.fetchOverdue();
-  }
+  PayablesVM _payablesModel = PayablesVM();
 
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
-
-
-    Map<String, double> dashChart2 = new Map();
-    dashChart2.putIfAbsent("Overdue", () => dashboard.overdue.toDouble());
-    dashChart2.putIfAbsent("Pending", () => dashboard.pending.toDouble());
-
-
-    return Container(
-        width: width > 600
-            ? width * .5
-            : width > 400 ? width * 0.95 : width * 0.94,
-        height: width > 600
-            ? height * 0.58
-            : width > 400 ? height * 0.55 : height * 0.5,
-        child: Column(children: <Widget>[
-          Container(
-            height: width > 600 ? height * 0.08 : height * 0.07,
-            padding: EdgeInsets.all(10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(left: 30, top: 10),
-                  child: Text('Overdue Debts',
-                    style: constant.subtitle.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 28)),
-                ),
-                GestureDetector(
-                  child: Card(
-                    margin: EdgeInsets.only(top: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)
-                    ),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                      child: Text('Refresh',
-                        style: constant.subtitle.copyWith(
-                          color: Colors.white,
-                          fontSize: 15
-                        )),
-                    ),
-                    color: constant.green,
-                  ),
-                  onTap: () async {
-                    setState(() {
-                      payable = overdue.fetchOverdue();
-                    });
-                  },
-                )
-              ],
-            )
-            
-          ),
-          SingleChildScrollView(
-          child: Container(
-            width: width,
-            height: width > 600 ? height * 0.5 : width > 400 ? height * 0.48 : height * 0.42,
-            child: FutureBuilder<List<Payables>>(
-              future: payable,
-              builder: (BuildContext context, AsyncSnapshot<List<Payables>> snap) {
-                if (!snap.hasData) return Loading();
-                return ListView.builder(
-                  itemCount: snap.data.length,
-                  itemBuilder: (context, index) {
-                    if(snap.data[index].isPaid == false) {
-                      return DashboardListTile(overdue: snap.data[index]);
-                    } 
-                  });
-              })
-          ))
-        ]));
+    return StreamBuilder<List<Payables>>(
+      stream: _payablesModel.getDueToday(),
+      builder: (context, snapshot) {
+        if(!snapshot.hasData) return Loading();
+        return ListView.builder(
+          itemCount: snapshot.data.length,
+          itemBuilder: (context, index) {
+            if(snapshot.data[index].isPaid != true)
+            return DashboardListTile(payables: snapshot.data[index]);
+          }
+        );
+      }
+    );
   }
 }
 
 class DashboardListTile extends StatelessWidget {
-
-  final Payables overdue;
-  const DashboardListTile({Key key, this.overdue}) : super(key: key);
+  final Payables payables;
+  DashboardListTile({this.payables});
 
   @override
   Widget build(BuildContext context) {
-    final cur = new NumberFormat.simpleCurrency(name: 'PHP');
-    double width = MediaQuery.of(context).size.width;
 
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-      elevation: 0,
-      child: ListTile(
-        onTap: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => DebtorPage(id: overdue.debtorId)));
-        },
-        leading: CircleAvatar(
-            radius: 25,
-            backgroundColor: constant.red,
-            child: Text('-45',
-                style:
-                    constant.subtitle.copyWith(color: Colors.white))),
-        title: Text('${overdue.debtorId}',
-            style: constant.subtitle
-                .copyWith(fontSize: width > 600 ? 18 : 15)),
-        subtitle: Text('Balance: ' + cur.format(overdue.amount), 
-          style: constant.subtitle),
-        trailing: CircularPercentIndicator(
-          radius: 40,
-          percent: 0.3,
-          backgroundColor: Colors.grey[200],
-          progressColor: constant.red,
-          center: Text('34'),
+    double width = MediaQuery.of(context).size.width;
+    final cur = new NumberFormat.simpleCurrency(name: 'PHP');
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(width: 20.0),
+        Container(
+          height: 100.0,
+          width: width * 0.7,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 15.0),
+            child: ListTile(
+              contentPadding: EdgeInsets.all(0),
+              title: Text('${payables.debtorId}',
+                style: constant.subtitle.copyWith(
+                  color: constant.bluegreen,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22.0
+                )),
+              subtitle: Text(new DateFormat("MMMM d, yyyy").format(payables.date).toString(), 
+                style: constant.subtitle.copyWith(
+                  fontSize: 18.0,
+                  color: Colors.grey.shade600
+              )),
+              trailing: RichText(
+                textAlign: TextAlign.right,
+                text: TextSpan(
+                  text: '${cur.format(payables.amount)}',
+                  style: constant.subtitle.copyWith(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                      color: constant.bluegreen),
+                  children: [
+                    TextSpan(
+                      text: '\n${cur.format(35000)}',
+                      style: constant.subtitle.copyWith(
+                        fontWeight: FontWeight.normal,
+                        color: Colors.grey.shade600,
+                        fontSize: 18.0
+                      )
+                    )
+                  ]
+                ),
+              ),
+              onTap: () {
+                print('Clicked list.');
+              },
+            ),
+          ),
         ),
-      )
+        SizedBox(width: 30.0),
+        IconButton(
+          icon: Icon(Icons.arrow_forward_ios,
+            color: constant.pink),
+          onPressed: () {
+            showModalBottomSheet(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(240.0),
+                  topLeft: Radius.circular(40.0))),
+              context: context, 
+              builder: (context) => 
+                AddPayment(debtorId: payables.debtorId, debtId: payables.debtId));
+          },
+        )
+      ],
     );
   }
 }

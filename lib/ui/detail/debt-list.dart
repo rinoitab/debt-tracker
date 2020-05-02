@@ -4,7 +4,6 @@ import 'package:debttracker/shared/loading.dart';
 import 'package:debttracker/view-model/debt-viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
 
 class DebtList extends StatefulWidget {
@@ -17,14 +16,7 @@ class DebtList extends StatefulWidget {
 
 class _DebtListState extends State<DebtList> {
 
-  DebtVM debt = DebtVM();
-  Future<List<Debt>> debtList;
-
-  @override
-  void initState() {
-    super.initState();
-    debtList = debt.fetchDebts(widget.debtor.id);
-  }
+  DebtVM _debtModel = DebtVM();
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +29,7 @@ class _DebtListState extends State<DebtList> {
         width: width,
         height: height,
         child: FutureBuilder<List<Debt>>(
-          future: debtList,
+          future: _debtModel.fetchDebts(widget.debtor.id),
           builder: (BuildContext context, AsyncSnapshot<List<Debt>> snap) {
             if(!snap.hasData) return Loading();
             return ListView.builder(
@@ -69,7 +61,7 @@ class DebtListCard extends StatelessWidget {
     ),
     child: ExpansionTile(
       leading: CircleAvatar(
-        backgroundColor: debt.isCompleted == false ? constant.red : constant.green,
+        backgroundColor: debt.isCompleted == false ? constant.pink : constant.green,
         radius: 25,
         child: Icon(debt.isCompleted == false ? Icons.warning : Icons.done,
           color: Colors.white,),
@@ -78,16 +70,7 @@ class DebtListCard extends StatelessWidget {
         style: TextStyle(
           fontWeight: FontWeight.bold
         )),
-      subtitle: Text('${debt.date}'),
-      trailing: CircularPercentIndicator(
-        radius: 50,
-        percent: 0.6,
-        circularStrokeCap: CircularStrokeCap.round,
-        backgroundColor: Colors.grey[200],
-        progressColor: debt.isCompleted == false ? constant.red : constant.green,
-        animation: true,
-        animationDuration: 3000,
-        center: Text('60%'),),
+      subtitle: Text(new DateFormat("MMM d, yyyy").format(debt.date).toString()),
       children: <Widget>[
         Container(
           padding: EdgeInsets.only(bottom: 10),
@@ -130,10 +113,10 @@ class DebtListCard extends StatelessWidget {
                     Text(cur.format(debt.amount) + ' for ${debt.term}',
                       style: TextStyle(
                         fontSize: 14)),
-                    Text(cur.format(debt.amount) + ' / ' + cur.format(debt.amount),
+                    Text(cur.format(debt.balance) + ' / ' + cur.format(debt.amount),
                       style: TextStyle(
                         fontSize: 14)),
-                    Text('${debt.date}',
+                    Text(new DateFormat("MMM d, yyyy").format(debt.date).toString(),
                       style: TextStyle(
                         fontSize: 14))
                   ],
@@ -147,7 +130,7 @@ class DebtListCard extends StatelessWidget {
             fontSize: 16,
             fontWeight: FontWeight.bold,
             letterSpacing: 1,
-            color: debt.isCompleted == false ? constant.red : constant.green
+            color: debt.isCompleted == false ? constant.pink : constant.green
           )),
         SizedBox(height: 20)
       ],

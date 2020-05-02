@@ -6,12 +6,16 @@ class PayablesVM extends Payables {
 
   final FirestoreService _service = FirestoreService();
 
-  Future<List<Payables>> fetchOverdue() async {
-    return await _service.getOverdue();
+  Future<List<Payables>> getOverduePayables() async {
+    return await _service.getOverduePayables();
+  }
+
+  Stream<List<Payables>> getDueToday() {
+    return _service.getDueToday();
   }
 
   Future addPayable({@required String debtorId, @required String debtId, DateTime date, double amount}) async {
-    await _service.addPayable(
+    return await _service.addPayable(
       Payables(
         debtorId: debtorId,
         debtId: debtorId,
