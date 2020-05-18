@@ -37,8 +37,7 @@ class Dashboard extends StatelessWidget {
       floatingActionButton: SpeedDial(
         elevation: 1,
         backgroundColor: constant.pink,
-        child: Icon(Icons.menu,
-          ),
+        animatedIcon: AnimatedIcons.menu_close,
         children: [
           SpeedDialChild(
             label: 'Add borrower',

@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
 import 'package:flutter/services.dart';
 
-successDialog(BuildContext context, String text, String id) {
+successDialog(BuildContext context, String text, String id, String route) {
+
+  String dialog;
+
+  route == 'add' ? 
+    dialog = 'Added $text successfully.' :
+    dialog = 'Updated $text successfully.';
+
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -12,7 +19,7 @@ successDialog(BuildContext context, String text, String id) {
           style: TextStyle(
             fontWeight: FontWeight.bold
           )),
-        content: Text('Added $text successfully.',
+        content: Text('$dialog',
           style: constant.subtitle),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0)),
@@ -20,7 +27,7 @@ successDialog(BuildContext context, String text, String id) {
           id.isEmpty ? Container() : FlatButton(
             child: Text('Go to Profile',
               style: constant.subtitle.copyWith(
-                color: constant.green
+                color: constant.torquiose
               )),
             onPressed: () {
               Navigator.push(
@@ -29,15 +36,27 @@ successDialog(BuildContext context, String text, String id) {
                   builder: (context) => DebtorPage(id: id)));
             },
           ),
+          route == 'update' ? Container() :
           FlatButton(
-            child: Text('OK',
+            child: Text('Add Another',
               style: constant.subtitle.copyWith(
-                color: constant.green
+                color: constant.torquiose
               )),
             onPressed: () {
               Navigator.pop(context);
             },
-          )
+          ),
+          FlatButton(
+            child: Text('Close',
+              style: constant.subtitle.copyWith(
+                color: constant.torquiose
+              )),
+            onPressed: () {
+              route == 'update' ? 
+              Navigator.pop(context) :
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          ),
         ],
       );
     }

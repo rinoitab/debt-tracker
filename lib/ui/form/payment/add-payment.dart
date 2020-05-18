@@ -1,12 +1,16 @@
+import 'package:debttracker/model/debt-model.dart';
+import 'package:debttracker/model/debtor-model.dart';
+import 'package:debttracker/model/payables-model.dart';
 import 'package:debttracker/ui/form/payment/add-payment-form.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class AddPayment extends StatelessWidget {
-  final String debtorId;
-  final String debtId;
-  AddPayment({this.debtorId, this.debtId});
+  final Debtor debtor;
+  final Debt debt;
+  final Payables payables;
+  AddPayment({this.debtor, this.debt, this. payables});
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +21,10 @@ class AddPayment extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Expanded(
+            flex: 2,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(40.0, 50.0, 0.0, 50.0),
-              child: AddPaymentForm(debtorId: debtorId, debtId: debtId),
+              child: AddPaymentForm(debtor: debtor, payables: payables),
             ),
           ),
           Expanded(

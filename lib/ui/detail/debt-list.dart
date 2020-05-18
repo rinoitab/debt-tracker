@@ -1,10 +1,13 @@
 import 'package:debttracker/model/debt-model.dart';
 import 'package:debttracker/model/debtor-model.dart';
+import 'package:debttracker/service/logic.dart';
 import 'package:debttracker/shared/loading.dart';
+import 'package:debttracker/ui/detail/payment-list.dart';
 import 'package:debttracker/view-model/debt-viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
+import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class DebtList extends StatefulWidget {
   final Debtor debtor;
@@ -28,14 +31,14 @@ class _DebtListState extends State<DebtList> {
         padding: EdgeInsets.symmetric(horizontal: 15),
         width: width,
         height: height,
-        child: FutureBuilder<List<Debt>>(
-          future: _debtModel.fetchDebts(widget.debtor.id),
+        child: StreamBuilder<List<Debt>>(
+          stream: _debtModel.streamDebtById(widget.debtor.id),
           builder: (BuildContext context, AsyncSnapshot<List<Debt>> snap) {
             if(!snap.hasData) return Loading();
             return ListView.builder(
               itemCount: snap.data.length,
               itemBuilder: (context, index) {
-                return DebtListCard(debt: snap.data[index]);
+                return DebtListCard(debt: snap.data[index], debtor: widget.debtor);
               });
           }
         )
@@ -45,96 +48,117 @@ class _DebtListState extends State<DebtList> {
 }
 
 class DebtListCard extends StatelessWidget {
+  final Debtor debtor;
   final Debt debt;
-  const DebtListCard({Key key, this.debt}) : super(key: key);
+  const DebtListCard({Key key, this.debtor, this.debt}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
 
     double width = MediaQuery.of(context).size.width;
-    final cur = new NumberFormat.simpleCurrency(name: 'PHP');
+    Logic _logic = Logic();
 
-    return Card(
-    elevation: 0,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(30)
-    ),
-    child: ExpansionTile(
-      leading: CircleAvatar(
-        backgroundColor: debt.isCompleted == false ? constant.pink : constant.green,
-        radius: 25,
-        child: Icon(debt.isCompleted == false ? Icons.warning : Icons.done,
-          color: Colors.white,),
-      ),
-      title: Text('${debt.desc}',
-        style: TextStyle(
-          fontWeight: FontWeight.bold
-        )),
-      subtitle: Text(new DateFormat("MMM d, yyyy").format(debt.date).toString()),
-      children: <Widget>[
-        Container(
-          padding: EdgeInsets.only(bottom: 10),
-          width: width,
-          child: Row(
-            children: <Widget>[
-              Container(
-                width: width * 0.35,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    Text('Amount',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14)),
-                    Text('Installment',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14)),
-                    Text('Balance',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14)),
-                    Text('Last Payment',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14))
-                  ],
-                ),
-              ),
-              SizedBox(width: 20),
-              Container(
-                width: width * 0.5,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(cur.format(debt.amount),
-                      style: TextStyle(
-                        fontSize: 14)),
-                    Text(cur.format(debt.amount) + ' for ${debt.term}',
-                      style: TextStyle(
-                        fontSize: 14)),
-                    Text(cur.format(debt.balance) + ' / ' + cur.format(debt.amount),
-                      style: TextStyle(
-                        fontSize: 14)),
-                    Text(new DateFormat("MMM d, yyyy").format(debt.date).toString(),
-                      style: TextStyle(
-                        fontSize: 14))
-                  ],
-                ),
-              ),
-            ], 
-          ),
+    int _percentInDecimal = _logic.getPercentInDecimal(debt.adjustedAmount, debt.balance);
+    double _percentage = _logic.getPercentage(debt.adjustedAmount, debt.balance);
+
+    List<String> interval = [
+      'once a month',
+      'every 15th',
+      'once a week'
+    ];
+
+    return Container(
+      child: ExpansionTile(
+        leading: CircleAvatar(
+          backgroundColor: debt.isCompleted == false ? constant.pink : constant.green,
+          radius: 25,
+          child: Icon(debt.isCompleted == false ? Icons.warning : Icons.done,
+            color: Colors.white,),
         ),
-        Text('Details',
-          style: TextStyle(
-            fontSize: 16,
+        title: Text('${debt.desc}',
+          style: constant.subtitle.copyWith(
             fontWeight: FontWeight.bold,
-            letterSpacing: 1,
-            color: debt.isCompleted == false ? constant.pink : constant.green
+            color: constant.bluegreen,
+            fontSize: 20.0
           )),
-        SizedBox(height: 20)
-      ],
-    )
+        trailing: CircularPercentIndicator(
+            backgroundColor: Colors.grey.shade100,
+            progressColor: _percentInDecimal > 50 ? constant.green : constant.pink,
+            radius: 50.0,
+            center: Text('$_percentInDecimal%'),
+            percent: _percentage,
+        ),
+        subtitle: 
+          Container(
+            padding: EdgeInsets.only(
+              left: 50.0,
+              bottom: 20.0),
+            width: width,
+            child: Row(
+              children: <Widget>[
+                Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: <Widget>[
+                      SizedBox(height: 20.0),
+                      Text('Date',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: constant.bluegreen)),
+                      Text('Principal + Interest',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: constant.bluegreen)),
+                      Text('Amortization',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: constant.bluegreen)),
+                      Text('Balance',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: constant.bluegreen)),
+                      
+                    ],
+                  ),
+                ),
+                SizedBox(width: 20),
+                Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      SizedBox(height: 20.0),
+                      Text(new DateFormat("MMM d, yyyy").format(debt.date).toString(),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade800)),
+                      Text(_logic.formatCurrency(debt.adjustedAmount) +
+                        ' (${_logic.formatCurrency(debt.amount)} + ${debt.markup}%)',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade800)),
+                      Text(_logic.formatCurrency(debt.amount) + ' for ${debt.term} months ${debt.type == 1 ? interval[0] : debt.type == 2 ? interval[1] : interval[2]}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade800)),
+                      Text(_logic.formatCurrency(debt.balance) + ' / ' + _logic.formatCurrency(debt.adjustedAmount),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade800)),
+                      
+                    ],
+                  ),
+                ),
+              ], 
+            ),
+          ),
+        children: <Widget>[
+          PaymentList(id: debt.id, debtor: debtor, debt: debt)
+        ],
+      ),
   );
   }
 }

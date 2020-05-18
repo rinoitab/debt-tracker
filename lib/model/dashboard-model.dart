@@ -1,24 +1,5 @@
 import 'dart:ui';
 import 'package:charts_flutter/flutter.dart' as chart;
-
-class Dashboard {
-  int dueToday;
-  double monthlyEarnings;
-  int completed;
-  int pending;
-
-  Dashboard({
-    this.dueToday, 
-    this.monthlyEarnings, 
-    this.completed, 
-    this.pending, }){
-    dueToday = 32;
-    monthlyEarnings = 43000.00;
-    completed = 56;
-    pending = 34;
-  }
-}
-
 class Earnings {
   final String month;
   final double earning;

@@ -1,9 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:debttracker/model/debt-model.dart';
 import 'package:debttracker/model/debtor-model.dart';
+import 'package:debttracker/model/payables-model.dart';
 import 'package:debttracker/service/logic.dart';
 import 'package:debttracker/shared/dialog.dart';
 import 'package:debttracker/view-model/debt-viewmodel.dart';
 import 'package:debttracker/view-model/debtor-viewmodel.dart';
+import 'package:debttracker/view-model/payables-viewmodel.dart';
+import 'package:debttracker/view-model/payment-viewmodel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -11,9 +14,9 @@ import 'package:intl/intl.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
 
 class AddPaymentForm extends StatefulWidget {
-  final String debtorId;
-  final String debtId;
-  AddPaymentForm({this.debtorId, this.debtId});
+  final Debtor debtor;
+  final Payables payables;
+  AddPaymentForm({this.debtor, this. payables});
 
   @override
   _AddPaymentFormState createState() => _AddPaymentFormState();
@@ -26,18 +29,46 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
   String _desc;
   String _date;
   double _amount;
+  List<Debt> _debtList = [];
 
 
   final cur = new NumberFormat.simpleCurrency(name: 'PHP');
+  final _debtorController = TextEditingController();
   final _dateController = TextEditingController();
   final _amountController =
       MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
 
   final key = GlobalKey<FormState>();
 
+  Debt debt;
   DebtorVM _debtorModel = DebtorVM();
   DebtVM _debtModel = DebtVM();
+  PayablesVM _payablesModel = PayablesVM();
+  PaymentVM _paymentModel = PaymentVM();
   Logic logic = Logic();
+
+  @override
+  void initState() {
+    _dateController.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
+    _date = DateTime.now().toIso8601String();
+    _debtorController.text = widget.debtor.name;
+    super.initState();
+  }
+
+  void clear() {
+    _dateController.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
+    _date = DateTime.now().toIso8601String();
+    _amountController.updateValue(0);
+  }
+
+  Future _markAsPaid(double _amount, String id) async {
+    var _debts = await _debtModel.getDebtById(id);
+    var _payables = await _payablesModel.getPayablesById(id);
+    logic.markPaidPayables(_payables, _amount, _debts);
+    print(debt.balance);
+    
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -48,14 +79,14 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          FutureBuilder<Debtor>(
-            future: _debtorModel.getDebtorById(widget.debtorId),
+          StreamBuilder<Debtor>(
+            stream: _debtorModel.streamDebtorById(widget.debtor.id),
             builder: (context, snapshot) {
               if(!snapshot.hasData) return Container();
               _debtor = snapshot.data.name;
               return TextFormField(
                 enabled: false,
-                initialValue: snapshot.data.name,
+                controller: _debtorController,
                 decoration: constant.form.copyWith(
                   icon: Icon(Icons.face,
                     color: Colors.grey.shade600,)),
@@ -63,28 +94,40 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
             }
           ),
           SizedBox(height: 15.0),
-          StreamBuilder<QuerySnapshot>(
-            stream: _debtModel.streamDebtsById(widget.debtorId),
+          StreamBuilder<List<Debt>>(
+            stream: _debtModel.streamDebtById(widget.debtor.id),
             builder: (context, snapshot) {
               if(!snapshot.hasData) return Container();
+              _debtList = [];
+              for(int i = 0; i < snapshot.data.length; i++) {
+                if(snapshot.data[i].isCompleted != true) {
+                  _debtList.add(snapshot.data[i]);
+                }
+              }
               return DropdownButtonFormField(
-                onChanged: (value) {
-                  setState(() {
-                    _debt = value;
-                  });
-                },
-                value: _debt,
-                items: snapshot.data.documents.map((DocumentSnapshot ds) {
-                  _desc = ds.data['desc'];
-                  return DropdownMenuItem<String>(
-                    value: ds.documentID,
-                    child: Text(ds.data['desc']));
-                }).toList(),
-                isDense: true,
-                decoration: constant.form.copyWith(
-                  labelText: 'Debt', 
-                  icon: Icon(Icons.shopping_cart,
-                    color: Colors.grey.shade600)));
+                  onChanged: (value) {
+                    setState(() {
+                      _debt = value;
+                    });
+                  },
+                  value: _debt,
+                  items: 
+                    _debtList.map((Debt _debt) {
+                    _desc = _debt.desc;
+                    if(_debt.isCompleted != true)
+                    return DropdownMenuItem<String>(
+                      value: _debt.id,
+                      child: Text(_debt.desc));
+                  })?.toList() ?? [],
+                  isDense: true,
+                  decoration: constant.form.copyWith(
+                    labelText: 'Debt', 
+                    icon: Icon(Icons.shopping_cart,
+                      color: Colors.grey.shade600)),
+                  validator: (value) {
+                    if(value == null) return '';
+                    else return null;
+                  }); 
             }
           ),
           SizedBox(height: 15.0),
@@ -137,18 +180,27 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
           SizedBox(height: 20.0),
           FlatButton(
             onPressed: () {
-              print('Generate receipt');
-              print(widget.debtorId);
-              print(_debtor);
-              print(_debt);
-              print(_desc);
-              print(_date);
-              print('$_amount');
 
               var text = logic.generateReceipt('SAMPLE-RECEIPT', _debtor, _desc, DateFormat("MMM d, yyyy").format(DateTime.parse(_date)).toString(), cur.format(_amount));
-              generateReceiptDialog(context, text, 'SAMPLE-RECEIPT');
-
-            }, 
+              if(key.currentState.validate()) {
+                _paymentModel.addPayment(
+                  debtorId: widget.debtor.id, 
+                  debtId: _debt,
+                  date: DateTime.parse(_date),
+                  amount: _amount)
+                  .then((result) {
+                    clear();
+                    _markAsPaid(_amount, _debt).whenComplete(
+                      generateReceiptDialog(context, text, result.documentID.toString().toUpperCase())
+                  );
+                  }).catchError((e) {
+                    print(e.toString());
+                    errorDialog(context, _desc);
+                  });
+              }
+            },
+            
+ 
             child: Card(
               color: constant.green,
               shape: RoundedRectangleBorder(

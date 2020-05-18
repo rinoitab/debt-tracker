@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debttracker/model/debtor-model.dart';
 
 class Debt {
@@ -30,7 +31,7 @@ class Debt {
     this.isCompleted,
     this.debtor});
 
-    Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap() {
     return {
       'debtorId': debtorId,
       'date': date,
@@ -46,22 +47,41 @@ class Debt {
     };
   }
 
-  static Debt fromMap(Map<String, dynamic> map, String documentId) {
+  static Debt fromMap(DocumentSnapshot map) {
     if (map == null) return null;
 
     return Debt(
-      debtorId: map['debtorId'],
-      date: map['date'].toDate(),
-      amount: map['amount'].toDouble(),
-      balance: map['balance'].toDouble(),
-      adjustedAmount: map['adjustedAmount'],
-      installmentAmount: map['installmentAmount'],
-      desc: map['desc'],
-      term: map['term'].toDouble(),
-      type: map['type'],
-      markup: map['markup'],
-      isCompleted: map['isCompleted'],
-      id: documentId
+      debtorId: map.data['debtorId'],
+      date: map.data['date'].toDate(),
+      amount: map.data['amount'].toDouble(),
+      balance: map.data['balance'].toDouble(),
+      adjustedAmount: map.data['adjustedAmount'],
+      installmentAmount: map.data['installmentAmount'],
+      desc: map.data['desc'],
+      term: map.data['term'].toDouble(),
+      type: map.data['type'],
+      markup: map.data['markup'],
+      isCompleted: map.data['isCompleted'],
+      id: map.documentID
     );
+  }
+
+  static List<Debt> fromSnap(QuerySnapshot snap) {
+    return snap.documents.map((map) {
+      return Debt(
+      debtorId: map.data['debtorId'],
+      date: map.data['date'].toDate(),
+      amount: map.data['amount'].toDouble(),
+      balance: map.data['balance'].toDouble(),
+      adjustedAmount: map.data['adjustedAmount'].toDouble(),
+      installmentAmount: map.data['installmentAmount'].toDouble(),
+      desc: map.data['desc'],
+      term: map.data['term'].toDouble(),
+      type: map.data['type'],
+      markup: map.data['markup'],
+      isCompleted: map.data['isCompleted'],
+      id: map.documentID
+    );
+    }).toList();
   }
 }

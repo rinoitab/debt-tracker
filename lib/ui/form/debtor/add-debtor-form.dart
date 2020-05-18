@@ -1,3 +1,4 @@
+import 'package:debttracker/model/debtor-model.dart';
 import 'package:debttracker/shared/dialog.dart';
 import 'package:debttracker/view-model/debtor-viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,8 @@ import 'package:debttracker/shared/constant.dart' as constant;
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 
 class AddDebtorForm extends StatefulWidget {
+  final Debtor debtor;
+  AddDebtorForm({this.debtor});
   @override
   _AddDebtorFormState createState() => _AddDebtorFormState();
 }
@@ -28,6 +31,40 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
   int _altcontact;
 
   DebtorVM _debtorModel = DebtorVM();
+
+  @override
+  void initState() {
+    _address.text = 'Davao City';
+
+    if(widget.debtor != null) {
+      _name.text = widget.debtor.name;
+      _address.text = widget.debtor.address ?? '';
+      _comaker.text = widget.debtor.comaker ?? '';
+      _contact = widget.debtor.contact;
+      _altcontact = widget.debtor.altcontact;
+      
+      if(widget.debtor.contact.toString().length > 6) {
+        _contactOption = 0;
+        _contactPhone.updateText(widget.debtor.contact.toString());
+      }  else {
+        _contactOption = 1;
+        _contactLandline.updateText(widget.debtor.contact.toString());
+      }
+
+      if(widget.debtor.altcontact.toString().length > 6) {
+        _altOption = 0;
+        _altPhone.updateText(widget.debtor.altcontact.toString());
+      }  else if (widget.debtor.altcontact == 0) {
+        _altOption = 0;
+        _altPhone.updateText('');
+      } else {
+        _altOption = 1;
+        _altLandline.updateText(widget.debtor.altcontact.toString());
+      }
+      
+    }
+    super.initState();
+  }
 
   void clear() {
     _name.text = '';
@@ -104,7 +141,16 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
                   onChanged: (value) {
                     _contact = int.parse(value.replaceAll(RegExp(r'[^\w]'), ''));
                   },
-                  validator: (value) => value == '(63) ' || value.isEmpty ? '' : null),
+                  validator: (value) {
+                    if(_contactOption == 0) {
+                      if(value == '63' || value.length < 17) return '';
+                    }
+                    else if(_contactOption == 1) {
+                      if(value.length < 8) return '';
+                    }
+                    else return null;
+                  }
+                )
               ),
             ],
           ),
@@ -115,7 +161,12 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
               labelText: 'Address',
               hintText: 'Input address of borrower',
               icon: Icon(Icons.room,
-                color: Colors.grey.shade600))),
+                color: Colors.grey.shade600)),
+            validator: (value) {
+              if(value.length == 0 || value == null) return '';
+              else return null;
+            },
+          ),
           SizedBox(height: 15.0),
           TextFormField(
             controller: _comaker,
@@ -162,7 +213,6 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
                   ),
                   onChanged: (value) {
                     _altcontact = int.parse(value.replaceAll(RegExp(r'[^\w]'), ''));
-                    print(_altcontact);
                   }),
               ),
             ],
@@ -171,6 +221,7 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
           FlatButton(
             onPressed: () {
               if(key.currentState.validate()) {
+                widget.debtor == null ?
                 _debtorModel.addDebtor(
                   name: _name.text, 
                   contact: _contact,
@@ -178,12 +229,25 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
                   comaker: _comaker.text ?? '',
                   altcontact: _altcontact != null ? _altcontact : null)
                   .then((result) {
-                    successDialog(context, _name.text, result.documentID);
+                    successDialog(context, _name.text, result.documentID, 'add');
                     clear();
                   }).catchError((e) {
                     print(e.toString());
                     errorDialog(context, _name.text);
-                  });
+                }) :
+                _debtorModel.updateDebtor(
+                  id: widget.debtor.id,
+                  name: _name.text, 
+                  contact: _contact,
+                  address: _address.text ?? '',
+                  comaker: _comaker.text ?? '',
+                  altcontact: _altcontact != null ? _altcontact : null)
+                  .then((result) {
+                    successDialog(context, _name.text, '', 'update');
+                  }).catchError((e) {
+                    print(e.toString());
+                    errorDialog(context, _name.text);
+                });
               }
             }, 
             child: Card(

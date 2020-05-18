@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:debttracker/model/debtor-model.dart';
 import 'package:debttracker/shared/dialog.dart';
 import 'package:debttracker/view-model/debt-viewmodel.dart';
 import 'package:debttracker/view-model/debtor-viewmodel.dart';
@@ -11,6 +11,9 @@ import 'package:debttracker/service/logic.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
 
 class AddDebtForm extends StatefulWidget {
+  final Debtor debtor;
+  AddDebtForm({this.debtor});
+
   @override
   _AddDebtFormState createState() => _AddDebtFormState();
 }
@@ -28,6 +31,7 @@ class _AddDebtFormState extends State<AddDebtForm> {
   String _start;
   String _end;
 
+  final _formDebtor = TextEditingController();
   final _formDate = TextEditingController();
   final _formDesc = TextEditingController();
   final _formAmount = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
@@ -45,12 +49,45 @@ class _AddDebtFormState extends State<AddDebtForm> {
   PayablesVM _payablesModel = PayablesVM();
   Logic logic = Logic();
 
+  void clear() {
+    _amount = 0.0;
+    _markup = 0;
+    _end = '';
+
+    _date = DateTime.now().toIso8601String();
+    _start = DateTime.now().toIso8601String();
+
+    _formDesc.text = '';
+    _formAmount.updateValue(0);
+    _formMarkup.text = '';
+    _formInterval.text = '';
+    _formEnd.text = '';
+    _formAdjusted.updateValue(0);
+    _formAmortization.updateValue(0);
+
+    _formDate.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
+    _formStart.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
+  }
+
   double _getAdjustedAmount() {
     return logic.getAdjustedAmount(_amount, _markup);
   }
 
   double _getAmortization() {
     return logic.getInstallmentAmount(_formAdjusted.numberValue, double.parse(_formInterval.text), _type);
+  }
+
+  @override
+  void initState() {
+    _formDate.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
+    _formStart.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
+    _date = DateTime.now().toIso8601String();
+    _start = DateTime.now().toIso8601String();
+    if(widget.debtor != null) {
+      _formDebtor.text = widget.debtor.name;
+      _debtor = widget.debtor.id;
+    }
+    super.initState();
   }
 
   @override
@@ -67,8 +104,9 @@ class _AddDebtFormState extends State<AddDebtForm> {
               fontSize: 20.0
             )),
           SizedBox(height: 15.0),
-          StreamBuilder<QuerySnapshot>(
-            stream: _debtorModel.streamAllDebtors(),
+          _formDebtor == null || _formDebtor.text.isEmpty ?
+          StreamBuilder<List<Debtor>>(
+            stream: _debtorModel.streamAllDebtors(''),
             builder: (context, snapshot) {
               if(!snapshot.hasData) return Container();
               return DropdownButtonFormField(
@@ -78,18 +116,30 @@ class _AddDebtFormState extends State<AddDebtForm> {
                   });
                 },
                 isDense: true,
-                items: snapshot.data.documents.map((DocumentSnapshot ds) {
+                items: snapshot.data.map((Debtor _debtor) {
                   return DropdownMenuItem<String>(
-                    value: ds.documentID,
-                    child: Text(ds.data['name']));
+                    value: _debtor.id,
+                    child: Text(_debtor.name));
                 }).toList(),
                 value: _debtor,
                 decoration: constant.form.copyWith(
                   labelText: 'Name',
                   icon: Icon(Icons.face,
-                    color: Colors.grey.shade600)));
+                    color: Colors.grey.shade600)),
+                validator: (value) {
+                  if(value == null) return '';
+                  else return null;
+              });
             }
-          ),
+          ) : 
+          TextFormField(
+            readOnly: true,
+            controller: _formDebtor,
+            decoration: constant.form.copyWith(
+              labelText: 'Name',
+              icon: Icon(Icons.face,
+                color: Colors.grey.shade600)),
+            validator: (value) => value.isEmpty || value == null ? '' : null),
           SizedBox(height: 15.0),
           TextFormField(
             controller: _formDate,
@@ -212,7 +262,12 @@ class _AddDebtFormState extends State<AddDebtForm> {
                       child: new Text(value));
                   }).toList(),
                   decoration: constant.form.copyWith(
-                    labelText: 'Schedule'))
+                    labelText: 'Schedule'),
+                  validator: (value) {
+                    if(value == null) return '';
+                    else return null;
+                  }
+                )
               ),
               SizedBox(width: 20.0),
               Expanded(
@@ -303,18 +358,6 @@ class _AddDebtFormState extends State<AddDebtForm> {
           FlatButton(
             onPressed: () {
               if(key.currentState.validate()) {
-                print(_debtor);
-                print(_date);
-                print(_formDesc.text);
-                print(_amount);
-                print(_formMarkup.text);
-                print(_formAdjusted.numberValue);
-                print(_formInterval.text);
-                print(_type);
-                print(_formAmortization.numberValue);
-                print(_start);
-                print(_end);
-
                 String _debtId;
 
                 _debtModel.addDebt(
@@ -328,25 +371,26 @@ class _AddDebtFormState extends State<AddDebtForm> {
                   type: _type,
                   installmentAmount: _formAmortization.numberValue)
                   .then((result) {
-                    successDialog(context, _formDesc.text, '');
+                    successDialog(context, _formDesc.text, '', 'add');
                    _debtId = result.documentID;
+
+                    var payableDateList = logic.getPayableDates(double.parse(
+                    _formInterval.text), 
+                    _type, 
+                    _start, 
+                    _end ?? '');      
+
+                    for (var i = 0; i < payableDateList.length; i++) {
+                    _payablesModel.addPayable(
+                      debtorId: _debtor, 
+                      debtId: _debtId,
+                      amount: _formAmortization.numberValue,
+                      date: payableDateList[i]);
+                    }  
+                    clear();   
                   }).catchError((e) {
                     errorDialog(context, _formDesc.text);
                   });
-
-                var payableDateList = logic.getPayableDates(double.parse(
-                  _formInterval.text), 
-                  _type, 
-                  _start, 
-                  _end ?? '');      
-
-                for (var i = 0; i < payableDateList.length; i++) {
-                _payablesModel.addPayable(
-                  debtorId: _debtor, 
-                  debtId: _debtId,
-                  amount: _formAmortization.numberValue,
-                  date: payableDateList[i]);
-                }     
               }
             }, 
             child: Card(

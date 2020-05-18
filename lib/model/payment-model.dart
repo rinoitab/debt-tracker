@@ -1,4 +1,6 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Payment {
 
   final String id;
@@ -9,4 +11,27 @@ class Payment {
   final double amount;
 
   Payment({this.id, this.debtorId, this.debtId, this.payableId, this.date, this.amount});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'debtorId': debtorId,
+      'debtId': debtId,
+      'date': date,
+      'amount': amount
+    };
+  }
+
+  static List<Payment> fromSnap(QuerySnapshot snap) {
+    return snap.documents.map((map) {
+      return Payment(
+      debtorId: map.data['debtorId'],
+      debtId: map['debtId'],
+      amount: map.data['amount'].toDouble(),
+      date: map.data['date'].toDate(),
+      id: map.documentID
+    );
+    }).toList();
+  }
+
 }
+

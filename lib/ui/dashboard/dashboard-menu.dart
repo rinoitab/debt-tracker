@@ -1,3 +1,10 @@
+import 'package:debttracker/model/combine-stream.dart';
+import 'package:debttracker/shared/loading.dart';
+import 'package:debttracker/ui/list/debtors-list.dart';
+import 'package:debttracker/ui/list/debts-list.dart';
+import 'package:debttracker/ui/list/overdue-list.dart';
+import 'package:debttracker/ui/list/pending-list.dart';
+import 'package:debttracker/view-model/combine-stream-vm.dart';
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
 import 'package:flutter_svg/flutter_svg.dart';
@@ -5,6 +12,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 class DashboardMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+
+    CombineStreamVM _combineStreamModel = CombineStreamVM();
+    int _collections = 0;
+
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
@@ -20,34 +31,47 @@ class DashboardMenu extends StatelessWidget {
                         bottomLeft: Radius.circular(10.0),
                         topRight: Radius.circular(30.0),
                         bottomRight: Radius.circular(30.0))),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    child: SvgPicture.asset('images/avatar.svg'),
-                  ),
-                  title: Container(
-                    padding: EdgeInsets.fromLTRB(0.0, 15.0, 20.0, 20.0),
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: RichText(
-                          text: TextSpan(
-                              text: 'You have ',
-                              style: constant.subtitle
-                                  .copyWith(color: Colors.white),
-                              children: [
-                            TextSpan(
-                                text: '30',
-                                style: constant.subtitle
-                                    .copyWith(fontWeight: FontWeight.bold)),
-                            TextSpan(text: ' collections today.')
-                          ])),
+                child: 
+                    ListTile(
+                      leading: CircleAvatar(
+                        child: SvgPicture.asset('images/avatar.svg'),
+                      ),
+                      title: Container(
+                        padding: EdgeInsets.fromLTRB(0.0, 15.0, 20.0, 20.0),
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: StreamBuilder<List<CombineStream>>(
+                            stream: _combineStreamModel.streamDueToday(),
+                            builder: (context, snapshot) {
+                              if(!snapshot.hasData) return Container();
+                              _collections = 0;
+                              for(int i = 0; i < snapshot.data.length; i++) {
+                                if(snapshot.data[i].payables.isPaid == false) {
+                                  _collections = _collections + 1;
+                                }
+                              }
+                              return RichText(
+                                  text: TextSpan(
+                                      text: 'You have ',
+                                      style: constant.subtitle
+                                          .copyWith(color: Colors.white),
+                                      children: [
+                                    TextSpan(
+                                        text: '$_collections',
+                                        style: constant.subtitle
+                                            .copyWith(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: ' collections today.')
+                                  ]));
+                            }
+                          ),
+                        ),
+                      ),
+                      trailing: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Image.network(
+                            'https://img.icons8.com/pastel-glyph/64/000000/like--v2.png',
+                            color: Colors.white),
                     ),
-                  ),
-                  trailing: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Image.network(
-                        'https://img.icons8.com/pastel-glyph/64/000000/like--v2.png',
-                        color: Colors.white),
-                  ),
                 )),
           ),
           Expanded(
@@ -59,7 +83,10 @@ class DashboardMenu extends StatelessWidget {
                 FlatButton(
                   padding: EdgeInsets.all(0.0),
                   onPressed: () {
-                    print('Overdue');
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(
+                        builder: (context) => OverdueList()));
                   },
                   child: DashboardMenuButton(
                     url: 'https://img.icons8.com/pastel-glyph/64/000000/error.png',
@@ -68,7 +95,10 @@ class DashboardMenu extends StatelessWidget {
                 FlatButton(
                   padding: EdgeInsets.all(0.0),
                   onPressed: () {
-                    print('Pending');
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(
+                        builder: (context) => PendingList()));
                   },
                   child: DashboardMenuButton(
                     url: 'https://img.icons8.com/pastel-glyph/64/000000/time.png',
@@ -78,7 +108,11 @@ class DashboardMenu extends StatelessWidget {
                 FlatButton(
                   padding: EdgeInsets.all(0.0),
                   onPressed: () {
-                    print('All debtors');
+
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(
+                        builder: (context) => DebtorsList()));
                   },
                   child: DashboardMenuButton(
                     url: 'https://img.icons8.com/pastel-glyph/64/000000/user-female--v3.png',
@@ -88,7 +122,10 @@ class DashboardMenu extends StatelessWidget {
                 FlatButton(
                   padding: EdgeInsets.all(0.0),
                   onPressed: () {
-                    print('All debts');
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(
+                        builder: (context) => DebtsList()));
                   },
                   child: DashboardMenuButton(
                     url: 'https://img.icons8.com/pastel-glyph/64/000000/money-box.png',

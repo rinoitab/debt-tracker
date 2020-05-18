@@ -1,7 +1,8 @@
-import 'package:debttracker/model/payables-model.dart';
+import 'package:debttracker/model/combine-stream.dart';
 import 'package:debttracker/shared/loading.dart';
+import 'package:debttracker/ui/detail/debtor.dart';
 import 'package:debttracker/ui/form/payment/add-payment.dart';
-import 'package:debttracker/view-model/payables-viewmodel.dart';
+import 'package:debttracker/view-model/combine-stream-vm.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
@@ -13,19 +14,26 @@ class DashboardList extends StatefulWidget {
 }
 
 class _DashboardListState extends State<DashboardList> {
-  PayablesVM _payablesModel = PayablesVM();
+  CombineStreamVM _combineStreamModel = CombineStreamVM();
+  List<CombineStream> _list = [];
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<Payables>>(
-      stream: _payablesModel.getDueToday(),
+    return StreamBuilder<List<CombineStream>>(
+      stream: _combineStreamModel.streamDueToday(),
       builder: (context, snapshot) {
         if(!snapshot.hasData) return Loading();
+        _list = [];
+        for(int i = 0; i < snapshot.data.length; i++) {
+          if(snapshot.data[i].payables.isPaid != true) {
+            _list.add(snapshot.data[i]);
+          }
+        }
         return ListView.builder(
-          itemCount: snapshot.data.length,
+          shrinkWrap: true,
+          itemCount: _list.length,
           itemBuilder: (context, index) {
-            if(snapshot.data[index].isPaid != true)
-            return DashboardListTile(payables: snapshot.data[index]);
+            return DashboardListTile(combineStream: _list[index]); 
           }
         );
       }
@@ -34,8 +42,8 @@ class _DashboardListState extends State<DashboardList> {
 }
 
 class DashboardListTile extends StatelessWidget {
-  final Payables payables;
-  DashboardListTile({this.payables});
+  final CombineStream combineStream;
+  DashboardListTile({this.combineStream});
 
   @override
   Widget build(BuildContext context) {
@@ -54,13 +62,13 @@ class DashboardListTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 15.0),
             child: ListTile(
               contentPadding: EdgeInsets.all(0),
-              title: Text('${payables.debtorId}',
+              title: Text('${combineStream.debtor.name}',
                 style: constant.subtitle.copyWith(
                   color: constant.bluegreen,
                   fontWeight: FontWeight.bold,
                   fontSize: 22.0
                 )),
-              subtitle: Text(new DateFormat("MMMM d, yyyy").format(payables.date).toString(), 
+              subtitle: Text(new DateFormat("MMMM d, yyyy").format(combineStream.payables.date).toString(), 
                 style: constant.subtitle.copyWith(
                   fontSize: 18.0,
                   color: Colors.grey.shade600
@@ -68,14 +76,14 @@ class DashboardListTile extends StatelessWidget {
               trailing: RichText(
                 textAlign: TextAlign.right,
                 text: TextSpan(
-                  text: '${cur.format(payables.amount)}',
+                  text: '${cur.format(combineStream.payables.balance)}',
                   style: constant.subtitle.copyWith(
                       fontSize: 20.0,
                       fontWeight: FontWeight.bold,
                       color: constant.bluegreen),
                   children: [
                     TextSpan(
-                      text: '\n${cur.format(35000)}',
+                      text: '\n${cur.format(combineStream.debt.balance)}',
                       style: constant.subtitle.copyWith(
                         fontWeight: FontWeight.normal,
                         color: Colors.grey.shade600,
@@ -86,8 +94,11 @@ class DashboardListTile extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                print('Clicked list.');
-              },
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(
+                    builder: (context) => DebtorPage(debtor: combineStream.debtor, debt: combineStream.debt, id: combineStream.debtor.id)));
+              }
             ),
           ),
         ),
@@ -104,7 +115,7 @@ class DashboardListTile extends StatelessWidget {
                   topLeft: Radius.circular(40.0))),
               context: context, 
               builder: (context) => 
-                AddPayment(debtorId: payables.debtorId, debtId: payables.debtId));
+                AddPayment(debtor: combineStream.debtor, debt: combineStream.debt, payables: combineStream.payables));
           },
         )
       ],

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Debtor {
   final String id;
   final String name;
@@ -25,16 +27,29 @@ class Debtor {
     };
   }
 
-  static Debtor fromMap(Map<String, dynamic> map, String documentId) {
+  static Debtor fromMap(DocumentSnapshot map) {
     if (map == null) return null;
 
     return Debtor(
-      name: map['name'],
-      address: map['address'] ?? '',
-      contact: map['contact'],
-      comaker: map['comaker'] ?? '',
-      altcontact: map['altcontact'] ?? 0,
-      id: documentId
+      name: map.data['name'],
+      address: map.data['address'] ?? '',
+      contact: map.data['contact'],
+      comaker: map.data['comaker'] ?? '',
+      altcontact: map.data['altcontact'] ?? 0,
+      id: map.documentID
     );
+  }
+
+  static List<Debtor> fromSnap(QuerySnapshot snap) {
+    return snap.documents.map((map) {
+      return Debtor(
+      name: map.data['name'],
+      address: map.data['address'] ?? '',
+      contact: map.data['contact'],
+      altcontact: map.data['altcontact'] ?? 0,
+      comaker: map.data['comaker'] ?? '',
+      id: map.documentID
+    );
+    }).toList();
   }
 }
