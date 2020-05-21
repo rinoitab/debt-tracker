@@ -12,6 +12,8 @@ class Dashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    double _width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -23,12 +25,18 @@ class Dashboard extends StatelessWidget {
               // * Card that will show current and previous earnings
               Expanded(
                 flex: 4,
-                child: DashboardEarningsCard()),
+                child: SizedBox(
+                  width: _width,
+                  child: DashboardEarningsCard())),
               Expanded(
-                child: DashboardMenu()),
+                child: SizedBox(
+                  width: _width,
+                  child: DashboardMenu())),
               Expanded(
                 flex: 6,
-                child: DashboardList()
+                child: SizedBox(
+                  width: _width,
+                  child: DashboardList())
               )
             ],
           ),

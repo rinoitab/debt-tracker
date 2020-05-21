@@ -26,8 +26,8 @@ class Payment {
       return Payment(
       debtorId: map.data['debtorId'],
       debtId: map['debtId'],
-      amount: map.data['amount'].toDouble(),
-      date: map.data['date'].toDate(),
+      amount: map.data['amount']?.toDouble() ?? 0.0,
+      date: map.data['date']?.toDate() ?? DateTime.now(),
       id: map.documentID
     );
     }).toList();

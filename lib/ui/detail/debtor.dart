@@ -1,4 +1,3 @@
-import 'package:debttracker/model/debt-model.dart';
 import 'package:debttracker/model/debtor-model.dart';
 import 'package:debttracker/service/logic.dart';
 import 'package:debttracker/shared/loading.dart';
@@ -8,15 +7,14 @@ import 'package:debttracker/ui/form/debtor/add-debtor.dart';
 import 'package:debttracker/ui/form/payment/add-payment.dart';
 import 'package:debttracker/view-model/debtor-viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
 import 'package:flutter_svg/flutter_svg.dart';
 
 class DebtorPage extends StatefulWidget {
-  final Debtor debtor;
-  final Debt debt;
   final String id;
-  DebtorPage({this.debtor, this.debt, this.id});
+  DebtorPage({this.id});
 
   @override
   _DebtorPageState createState() => _DebtorPageState();
@@ -107,7 +105,7 @@ class _DebtorPageState extends State<DebtorPage> {
                   topLeft: Radius.circular(40.0))),
               context: context, 
               builder: (context) => 
-                AddDebt(debtor: widget.debtor));
+                AddDebt(debtor: _debtor));
           }
         ),
 
@@ -124,7 +122,7 @@ class _DebtorPageState extends State<DebtorPage> {
                   topLeft: Radius.circular(40.0))),
               context: context, 
               builder: (context) => 
-                AddPayment(debtor: widget.debtor));
+                AddPayment(debtor: _debtor));
           }
         )
       ],
@@ -226,11 +224,28 @@ class _DebtorDetailState extends State<DebtorDetail> {
                   Expanded(
                     child: Column(
                       children: <Widget>[
-                        CircleAvatar(
-                          backgroundColor: constant.pink,
-                          radius: 25.0,
-                          child: Icon(Icons.phone,
-                              color: Colors.white), 
+                        FlatButton(
+                          onPressed: () {
+                            Clipboard.setData(new ClipboardData(text: '${widget.debtor.contact}'));
+                            Scaffold.of(context).showSnackBar(
+                              new SnackBar(
+                                backgroundColor: constant.pink,
+                                duration: Duration(seconds: 3),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20.0),
+                                    topRight: Radius.circular(20.0)
+                                  )
+                                ),
+                                content: Text('Copied ${_logic.formatContact(widget.debtor.contact)} to Clipboard.'))
+                            );
+                          },
+                          child: CircleAvatar(
+                            backgroundColor: constant.pink,
+                            radius: 25.0,
+                            child: Icon(Icons.phone,
+                                color: Colors.white), 
+                          ),
                         ),
                         SizedBox(height: 10.0),
                         Container(

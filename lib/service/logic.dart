@@ -15,10 +15,10 @@ class Logic {
     double current = 0.0;
 
     for(int i = 0; i < _payment.length; i++) {
-      if(_payment[i].date.month == now.month) {
+      if(_payment[i].date.month == now.month - 1) {
         prev = prev + _payment[i].amount;
       }
-      if(_payment[i].date.month == now.month - 1) {
+      if(_payment[i].date.month == now.month) {
         current = current + _payment[i].amount;
       }
     }
@@ -44,7 +44,17 @@ class Logic {
           payable = new DateTime(payable.year, i == 0 ? payable.month : payable.month + 1, payable.day);
           break;
         case 2: 
-          payable = DateTime(payable.year, i % 2 == 0 ? payable.month : payable.month + 1, i % 2 == 0 ? startCollectionDate.day : secondCollectionDate.day);
+          if(i >= 2) {
+            payable = DateTime(
+              payable.year, 
+              i % 2 == 0 ? payable.month + 1 : payable.month, 
+              i % 2 == 0 ? startCollectionDate.day : secondCollectionDate.day);
+          } else {
+            payable = DateTime(
+              payable.year, 
+              payable.month, 
+              i % 2 == 0 ? startCollectionDate.day : secondCollectionDate.day);
+          }
           break;
         case 4:
           payable = new DateTime(payable.year, payable.month, payable.day + 7);

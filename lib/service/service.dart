@@ -15,6 +15,7 @@ class FirestoreService {
   final CollectionReference _debtReference = Firestore.instance.collection('debt');
   final CollectionReference _paymentReference = Firestore.instance.collection('payment');
 
+  Future offline = Firestore.instance.settings(persistenceEnabled: true);
 
   // * Debtor-related Queries
   Future addDebtor(Debtor debtor) async {

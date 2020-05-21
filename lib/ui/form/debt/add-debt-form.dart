@@ -49,6 +49,8 @@ class _AddDebtFormState extends State<AddDebtForm> {
   PayablesVM _payablesModel = PayablesVM();
   Logic logic = Logic();
 
+  bool _buttonStatus = true;
+
   void clear() {
     _amount = 0.0;
     _markup = 0;
@@ -65,8 +67,8 @@ class _AddDebtFormState extends State<AddDebtForm> {
     _formAdjusted.updateValue(0);
     _formAmortization.updateValue(0);
 
-    _formDate.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
-    _formStart.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
+    _formDate.text = logic.formatDate(DateTime.now());
+    _formStart.text = logic.formatDate(DateTime.now());
   }
 
   double _getAdjustedAmount() {
@@ -79,8 +81,8 @@ class _AddDebtFormState extends State<AddDebtForm> {
 
   @override
   void initState() {
-    _formDate.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
-    _formStart.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
+    _formDate.text = logic.formatDate(DateTime.now());
+    _formStart.text = logic.formatDate(DateTime.now());
     _date = DateTime.now().toIso8601String();
     _start = DateTime.now().toIso8601String();
     if(widget.debtor != null) {
@@ -110,6 +112,7 @@ class _AddDebtFormState extends State<AddDebtForm> {
             builder: (context, snapshot) {
               if(!snapshot.hasData) return Container();
               return DropdownButtonFormField(
+                isExpanded: true,
                 onChanged: (value) {
                   setState(() {
                     _debtor = value;
@@ -350,51 +353,72 @@ class _AddDebtFormState extends State<AddDebtForm> {
                       });
                       _end = date.toIso8601String();
                       _formEnd.text = new DateFormat("MMM d, yyyy").format(date).toString();
+                  },
+                  validator: (value) {
+                    if(_type == 2) {
+                      if(value.isEmpty || value == null) {
+                        return '';
+                      } else return null;
+                    } else return null;
                   })
               ),
             ],
           ),
           SizedBox(height: 15.0),
           FlatButton(
+            
             onPressed: () {
-              if(key.currentState.validate()) {
-                String _debtId;
-
-                _debtModel.addDebt(
-                  debtorId: _debtor, 
-                  date: DateTime.parse(_date),
-                  desc: _formDesc.text,
-                  amount: _amount,
-                  markup: int.parse(_formMarkup.text),
-                  adjustedAmount: _formAdjusted.numberValue,
-                  term: double.parse(_formInterval.text),
-                  type: _type,
-                  installmentAmount: _formAmortization.numberValue)
-                  .then((result) {
-                    successDialog(context, _formDesc.text, '', 'add');
-                   _debtId = result.documentID;
-
-                    var payableDateList = logic.getPayableDates(double.parse(
-                    _formInterval.text), 
-                    _type, 
-                    _start, 
-                    _end ?? '');      
-
-                    for (var i = 0; i < payableDateList.length; i++) {
-                    _payablesModel.addPayable(
-                      debtorId: _debtor, 
-                      debtId: _debtId,
-                      amount: _formAmortization.numberValue,
-                      date: payableDateList[i]);
-                    }  
-                    clear();   
-                  }).catchError((e) {
-                    errorDialog(context, _formDesc.text);
+              if(!_buttonStatus) return null;
+              else {
+                if(key.currentState.validate()) {
+                  setState(() {
+                    _buttonStatus = false;
                   });
+                  String _debtId;
+
+                  _debtModel.addDebt(
+                    debtorId: _debtor, 
+                    date: DateTime.parse(_date),
+                    desc: _formDesc.text,
+                    amount: _amount,
+                    markup: int.parse(_formMarkup.text),
+                    adjustedAmount: _formAdjusted.numberValue,
+                    term: double.parse(_formInterval.text),
+                    type: _type,
+                    installmentAmount: _formAmortization.numberValue)
+                    .then((result) {
+                      successDialog(context, _formDesc.text, '', 'add');
+                    _debtId = result.documentID;
+
+                      var payableDateList = logic.getPayableDates(double.parse(
+                      _formInterval.text), 
+                      _type, 
+                      _start, 
+                      _end ?? '');      
+
+                      for (var i = 0; i < payableDateList.length; i++) {
+                      _payablesModel.addPayable(
+                        debtorId: _debtor, 
+                        debtId: _debtId,
+                        amount: _formAmortization.numberValue,
+                        date: payableDateList[i]);
+                      }  
+                      clear();  
+                      setState(() {
+                        _buttonStatus = true;
+                      }); 
+                    }).catchError((e) {
+                      errorDialog(context, _formDesc.text);
+                      setState(() {
+                        _buttonStatus = true;
+                      }); 
+                    });
+
+                }
               }
             }, 
             child: Card(
-              color: constant.green,
+              color: !_buttonStatus ? Colors.grey[400] : constant.green,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30.0)
               ),
@@ -406,9 +430,9 @@ class _AddDebtFormState extends State<AddDebtForm> {
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 3.0),
-                      child: Text('Save',
+                      child: Text(!_buttonStatus ? 'Hold on...' : 'Save',
                         style: constant.subtitle.copyWith(
-                          color: constant.bluegreen, 
+                          color: !_buttonStatus ? Colors.white : constant.bluegreen, 
                       )
                     ),
                   ),

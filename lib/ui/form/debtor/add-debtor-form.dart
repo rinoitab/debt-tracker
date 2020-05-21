@@ -3,6 +3,7 @@ import 'package:debttracker/shared/dialog.dart';
 import 'package:debttracker/view-model/debtor-viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
+import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 
 class AddDebtorForm extends StatefulWidget {
@@ -29,6 +30,8 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
   List<String> _contactValue = ['Phone', 'Landline'];
   int _contact;
   int _altcontact;
+
+  bool _buttonStatus = true;
 
   DebtorVM _debtorModel = DebtorVM();
 
@@ -70,7 +73,7 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
     _name.text = '';
     _contactPhone.text = '';
     _contactLandline.text = '';
-    _address.text = '';
+    _address.text = 'Davao City';
     _comaker.text = '';
     _altPhone.text = '';
     _altLandline.text = '';
@@ -133,6 +136,7 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
               Expanded(
                 flex: 6,
                 child: TextFormField(
+                  inputFormatters: [_contactOption == 0 ? LengthLimitingTextInputFormatter(17) : LengthLimitingTextInputFormatter(8)],
                   controller: _contactOption == 0 ? _contactPhone : _contactLandline,
                   decoration: constant.form.copyWith(
                     labelText: 'Contact',
@@ -140,6 +144,7 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
                   ),
                   onChanged: (value) {
                     _contact = int.parse(value.replaceAll(RegExp(r'[^\w]'), ''));
+                    print(value);
                   },
                   validator: (value) {
                     if(_contactOption == 0) {
@@ -148,7 +153,7 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
                     else if(_contactOption == 1) {
                       if(value.length < 8) return '';
                     }
-                    else return null;
+                    return null;
                   }
                 )
               ),
@@ -206,6 +211,7 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
               Expanded(
                 flex: 6,
                 child: TextFormField(
+                  inputFormatters: [_altOption == 0 ? LengthLimitingTextInputFormatter(17) : LengthLimitingTextInputFormatter(8)],
                   controller: _altOption == 0 ? _altPhone : _altLandline,
                   decoration: constant.form.copyWith(
                     labelText: 'Alternate Contact',
@@ -220,38 +226,50 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
           SizedBox(height: 15.0),
           FlatButton(
             onPressed: () {
-              if(key.currentState.validate()) {
-                widget.debtor == null ?
-                _debtorModel.addDebtor(
-                  name: _name.text, 
-                  contact: _contact,
-                  address: _address.text ?? '',
-                  comaker: _comaker.text ?? '',
-                  altcontact: _altcontact != null ? _altcontact : null)
-                  .then((result) {
-                    successDialog(context, _name.text, result.documentID, 'add');
-                    clear();
-                  }).catchError((e) {
-                    print(e.toString());
-                    errorDialog(context, _name.text);
-                }) :
-                _debtorModel.updateDebtor(
-                  id: widget.debtor.id,
-                  name: _name.text, 
-                  contact: _contact,
-                  address: _address.text ?? '',
-                  comaker: _comaker.text ?? '',
-                  altcontact: _altcontact != null ? _altcontact : null)
-                  .then((result) {
-                    successDialog(context, _name.text, '', 'update');
-                  }).catchError((e) {
-                    print(e.toString());
-                    errorDialog(context, _name.text);
-                });
+              if(!_buttonStatus) return null;
+              else {
+                if(key.currentState.validate()) {
+                  setState(() {
+                    _buttonStatus = false;
+                  });
+                  widget.debtor == null ?
+                  _debtorModel.addDebtor(
+                    name: _name.text, 
+                    contact: _contact,
+                    address: _address.text ?? '',
+                    comaker: _comaker.text ?? '',
+                    altcontact: _altcontact != null ? _altcontact : null)
+                    .then((result) {
+                      successDialog(context, _name.text, result.documentID, 'add');
+                      clear();
+                      setState(() {
+                        _buttonStatus = true;
+                      });
+                    }).catchError((e) {
+                      print(e.toString());
+                      errorDialog(context, _name.text);
+                      setState(() {
+                        _buttonStatus = true;
+                      });
+                  }) :
+                  _debtorModel.updateDebtor(
+                    id: widget.debtor.id,
+                    name: _name.text, 
+                    contact: _contact,
+                    address: _address.text ?? '',
+                    comaker: _comaker.text ?? '',
+                    altcontact: _altcontact != null ? _altcontact : null)
+                    .then((result) {
+                      successDialog(context, _name.text, '', 'update');
+                    }).catchError((e) {
+                      print(e.toString());
+                      errorDialog(context, _name.text);
+                  });
+                }
               }
             }, 
             child: Card(
-              color: constant.green,
+              color: !_buttonStatus ? Colors.grey[400] : constant.green,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30.0)
               ),
@@ -263,9 +281,9 @@ class _AddDebtorFormState extends State<AddDebtorForm> {
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 3.0),
-                      child: Text('Save',
+                      child: Text(!_buttonStatus ? 'Hold on...' : 'Save',
                         style: constant.subtitle.copyWith(
-                          color: constant.bluegreen, 
+                          color: !_buttonStatus ? Colors.white : constant.bluegreen, 
                       )
                     ),
                   ),

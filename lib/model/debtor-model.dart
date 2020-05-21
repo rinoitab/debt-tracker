@@ -31,9 +31,9 @@ class Debtor {
     if (map == null) return null;
 
     return Debtor(
-      name: map.data['name'],
+      name: map.data['name'] ?? '',
       address: map.data['address'] ?? '',
-      contact: map.data['contact'],
+      contact: map.data['contact'] ?? 0,
       comaker: map.data['comaker'] ?? '',
       altcontact: map.data['altcontact'] ?? 0,
       id: map.documentID

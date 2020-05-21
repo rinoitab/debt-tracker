@@ -10,7 +10,6 @@ import 'package:debttracker/view-model/payment-viewmodel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
-import 'package:intl/intl.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
 
 class AddPaymentForm extends StatefulWidget {
@@ -31,8 +30,6 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
   double _amount;
   List<Debt> _debtList = [];
 
-
-  final cur = new NumberFormat.simpleCurrency(name: 'PHP');
   final _debtorController = TextEditingController();
   final _dateController = TextEditingController();
   final _amountController =
@@ -47,16 +44,18 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
   PaymentVM _paymentModel = PaymentVM();
   Logic logic = Logic();
 
+  bool _buttonStatus = true;
+
   @override
   void initState() {
-    _dateController.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
+    _dateController.text = logic.formatDate(DateTime.now());
     _date = DateTime.now().toIso8601String();
     _debtorController.text = widget.debtor.name;
     super.initState();
   }
 
   void clear() {
-    _dateController.text = new DateFormat("MMM d, yyyy").format(DateTime.now()).toString();
+    _dateController.text = logic.formatDate(DateTime.now());
     _date = DateTime.now().toIso8601String();
     _amountController.updateValue(0);
   }
@@ -65,8 +64,10 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
     var _debts = await _debtModel.getDebtById(id);
     var _payables = await _payablesModel.getPayablesById(id);
     logic.markPaidPayables(_payables, _amount, _debts);
-    print(debt.balance);
-    
+  }
+
+  void changeAmount(double amount) {
+    _amountController.updateValue(amount);
   }
 
 
@@ -105,20 +106,27 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                 }
               }
               return DropdownButtonFormField(
+                isExpanded: true,
                   onChanged: (value) {
                     setState(() {
+                      for(int i = 0; i < _debtList.length; i++) {
+                        if(_debtList[i].id == value) {
+                          changeAmount(_debtList[i].installmentAmount);
+                          _amount = _debtList[i].installmentAmount;
+                        }
+                      }
                       _debt = value;
                     });
                   },
                   value: _debt,
                   items: 
                     _debtList.map((Debt _debt) {
-                    _desc = _debt.desc;
-                    if(_debt.isCompleted != true)
-                    return DropdownMenuItem<String>(
-                      value: _debt.id,
-                      child: Text(_debt.desc));
-                  })?.toList() ?? [],
+                      _desc = _debt.desc;
+                      if(_debt.isCompleted != true)
+                      return DropdownMenuItem<String>(
+                        value: _debt.id,
+                        child: Text(_debt.desc));
+                    })?.toList() ?? [],
                   isDense: true,
                   decoration: constant.form.copyWith(
                     labelText: 'Debt', 
@@ -160,7 +168,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                   );
                 });
                 _date = date.toIso8601String();
-                _dateController.text = new DateFormat("MMM d, yyyy").format(date).toString();
+                _dateController.text = logic.formatDate(date);
             },
             validator: (value) => value.isEmpty ? '' : null,
           ),
@@ -181,28 +189,40 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
           FlatButton(
             onPressed: () {
 
-              var text = logic.generateReceipt('SAMPLE-RECEIPT', _debtor, _desc, DateFormat("MMM d, yyyy").format(DateTime.parse(_date)).toString(), cur.format(_amount));
-              if(key.currentState.validate()) {
-                _paymentModel.addPayment(
-                  debtorId: widget.debtor.id, 
-                  debtId: _debt,
-                  date: DateTime.parse(_date),
-                  amount: _amount)
-                  .then((result) {
-                    clear();
-                    _markAsPaid(_amount, _debt).whenComplete(
-                      generateReceiptDialog(context, text, result.documentID.toString().toUpperCase())
-                  );
-                  }).catchError((e) {
-                    print(e.toString());
-                    errorDialog(context, _desc);
+              if(!_buttonStatus) return null;
+              else {
+                if(key.currentState.validate()) {
+                  setState(() {
+                    _buttonStatus = false;
                   });
+
+                  _paymentModel.addPayment(
+                    debtorId: widget.debtor.id, 
+                    debtId: _debt,
+                    date: DateTime.parse(_date),
+                    amount: _amount)
+                    .then((result) {
+                      var text = logic.generateReceipt(result.documentID, _debtor, _desc, logic.formatDate(DateTime.parse(_date)), logic.formatCurrency(_amount));
+                      clear();
+                      _markAsPaid(_amount, _debt).whenComplete(
+                        generateReceiptDialog(context, text, result.documentID.toString().toUpperCase())
+                      );
+                      setState(() {
+                        _buttonStatus = true;
+                      });
+                    }).catchError((e) {
+                      print(e.toString());
+                      errorDialog(context, _desc);
+                      setState(() {
+                        _buttonStatus = true;
+                      }); 
+                    });
+                }
               }
             },
-            
  
             child: Card(
-              color: constant.green,
+              color: !_buttonStatus ? Colors.grey[400] : constant.green,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30.0)
               ),
@@ -214,9 +234,9 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 3.0),
-                      child: Text('Generate Receipt',
+                      child: Text(!_buttonStatus ? 'Hold on...' : 'Generate Receipt',
                         style: constant.subtitle.copyWith(
-                          color: constant.bluegreen, 
+                          color: !_buttonStatus ? Colors.white : constant.bluegreen, 
                         )
                       ),
                     ),

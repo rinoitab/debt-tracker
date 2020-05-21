@@ -35,7 +35,6 @@ class _DebtorsListState extends State<DebtorsList> {
                   onChanged: (value) {
                     setState(() {
                       search = value;
-                      _debtorModel.streamAllDebtors(search).drain();
                     });
                   },
                 ),
@@ -44,7 +43,7 @@ class _DebtorsListState extends State<DebtorsList> {
             Expanded(
               flex: 8,
               child: StreamBuilder<List<Debtor>>(
-                stream: _debtorModel.streamAllDebtors(search),
+                stream: _debtorModel.streamAllDebtors(search.substring(0).toUpperCase()),
                 builder: (context, snap) {
                   if (!snap.hasData) return Loading();
                   return ListView.builder(
@@ -55,7 +54,11 @@ class _DebtorsListState extends State<DebtorsList> {
                               .toLowerCase()
                               .contains(search.toLowerCase()))
                           return DebtorsListTile(debtor: snap.data[index]);
-                      });
+                        else {
+                          return Container();
+                        }
+                  });
+                  
               }
             )),
           ],
@@ -85,7 +88,7 @@ class _DebtorsListTileState extends State<DebtorsListTile> {
           Navigator.push(
             context, 
             MaterialPageRoute(
-              builder: (context) => DebtorPage(debtor: widget.debtor, id: widget.debtor.id)));
+              builder: (context) => DebtorPage(id: widget.debtor.id)));
         },
         title: Text(widget.debtor.name,
             style: constant.subtitle.copyWith(

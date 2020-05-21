@@ -1,4 +1,5 @@
 import 'package:debttracker/model/combine-stream.dart';
+import 'package:debttracker/service/logic.dart';
 import 'package:debttracker/shared/loading.dart';
 import 'package:debttracker/ui/detail/debtor.dart';
 import 'package:debttracker/ui/form/payment/add-payment.dart';
@@ -6,7 +7,6 @@ import 'package:debttracker/view-model/combine-stream-vm.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
-import 'package:intl/intl.dart';
 
 class DashboardList extends StatefulWidget {
   @override
@@ -49,7 +49,7 @@ class DashboardListTile extends StatelessWidget {
   Widget build(BuildContext context) {
 
     double width = MediaQuery.of(context).size.width;
-    final cur = new NumberFormat.simpleCurrency(name: 'PHP');
+    Logic _logic = Logic();
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -57,7 +57,7 @@ class DashboardListTile extends StatelessWidget {
         SizedBox(width: 20.0),
         Container(
           height: 100.0,
-          width: width * 0.7,
+          width: width * 0.8,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 15.0),
             child: ListTile(
@@ -68,7 +68,7 @@ class DashboardListTile extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   fontSize: 22.0
                 )),
-              subtitle: Text(new DateFormat("MMMM d, yyyy").format(combineStream.payables.date).toString(), 
+              subtitle: Text(_logic.formatDate(combineStream.payables.date), 
                 style: constant.subtitle.copyWith(
                   fontSize: 18.0,
                   color: Colors.grey.shade600
@@ -76,14 +76,14 @@ class DashboardListTile extends StatelessWidget {
               trailing: RichText(
                 textAlign: TextAlign.right,
                 text: TextSpan(
-                  text: '${cur.format(combineStream.payables.balance)}',
+                  text: '${_logic.formatCurrency(combineStream.payables.balance)}',
                   style: constant.subtitle.copyWith(
                       fontSize: 20.0,
                       fontWeight: FontWeight.bold,
                       color: constant.bluegreen),
                   children: [
                     TextSpan(
-                      text: '\n${cur.format(combineStream.debt.balance)}',
+                      text: '\n${_logic.formatCurrency(combineStream.debt.balance)}',
                       style: constant.subtitle.copyWith(
                         fontWeight: FontWeight.normal,
                         color: Colors.grey.shade600,
@@ -97,12 +97,12 @@ class DashboardListTile extends StatelessWidget {
                 Navigator.push(
                   context, 
                   MaterialPageRoute(
-                    builder: (context) => DebtorPage(debtor: combineStream.debtor, debt: combineStream.debt, id: combineStream.debtor.id)));
+                    builder: (context) => DebtorPage(id: combineStream.debtor.id)));
               }
             ),
           ),
         ),
-        SizedBox(width: 30.0),
+        SizedBox(width: 40.0),
         IconButton(
           icon: Icon(Icons.arrow_forward_ios,
             color: constant.pink),

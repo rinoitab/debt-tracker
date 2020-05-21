@@ -5,7 +5,6 @@ import 'package:debttracker/ui/detail/debtor.dart';
 import 'package:debttracker/view-model/combine-stream-vm.dart';
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
-import 'package:intl/intl.dart';
 
 class OverdueList extends StatefulWidget {
   @override
@@ -63,7 +62,7 @@ class OverdueListTile extends StatelessWidget {
           Navigator.push(
             context, 
             MaterialPageRoute(
-              builder: (context) => DebtorPage(debtor: overdue.debtor, id: overdue.debtor.id)));
+              builder: (context) => DebtorPage(id: overdue.debtor.id)));
         },
         leading: CircleAvatar(
           radius: 50.0,

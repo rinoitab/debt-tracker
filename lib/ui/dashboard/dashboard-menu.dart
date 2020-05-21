@@ -1,5 +1,4 @@
 import 'package:debttracker/model/combine-stream.dart';
-import 'package:debttracker/shared/loading.dart';
 import 'package:debttracker/ui/list/debtors-list.dart';
 import 'package:debttracker/ui/list/debts-list.dart';
 import 'package:debttracker/ui/list/overdue-list.dart';
@@ -38,32 +37,30 @@ class DashboardMenu extends StatelessWidget {
                       ),
                       title: Container(
                         padding: EdgeInsets.fromLTRB(0.0, 15.0, 20.0, 20.0),
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          child: StreamBuilder<List<CombineStream>>(
-                            stream: _combineStreamModel.streamDueToday(),
-                            builder: (context, snapshot) {
-                              if(!snapshot.hasData) return Container();
-                              _collections = 0;
-                              for(int i = 0; i < snapshot.data.length; i++) {
-                                if(snapshot.data[i].payables.isPaid == false) {
-                                  _collections = _collections + 1;
-                                }
+                        child: StreamBuilder<List<CombineStream>>(
+                          stream: _combineStreamModel.streamDueToday(),
+                          builder: (context, snapshot) {
+                            if(!snapshot.hasData) return Container();
+                            _collections = 0;
+                            for(int i = 0; i < snapshot.data.length; i++) {
+                              if(snapshot.data[i].payables.isPaid == false) {
+                                _collections = _collections + 1;
                               }
-                              return RichText(
-                                  text: TextSpan(
-                                      text: 'You have ',
-                                      style: constant.subtitle
-                                          .copyWith(color: Colors.white),
-                                      children: [
-                                    TextSpan(
-                                        text: '$_collections',
-                                        style: constant.subtitle
-                                            .copyWith(fontWeight: FontWeight.bold)),
-                                    TextSpan(text: ' collections today.')
-                                  ]));
                             }
-                          ),
+                            return RichText(
+                                text: TextSpan(
+                                    text: 'You have ',
+                                    style: constant.subtitle.copyWith(
+                                      color: Colors.white,
+                                      fontSize: 15.0),
+                                    children: [
+                                  TextSpan(
+                                      text: '$_collections',
+                                      style: constant.subtitle
+                                          .copyWith(fontWeight: FontWeight.bold)),
+                                  TextSpan(text: ' collections today.')
+                                ]));
+                          }
                         ),
                       ),
                       trailing: Padding(

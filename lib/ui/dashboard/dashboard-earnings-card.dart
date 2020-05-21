@@ -1,12 +1,12 @@
 import 'package:debttracker/model/dashboard-model.dart';
 import 'package:debttracker/model/payment-model.dart';
 import 'package:debttracker/service/logic.dart';
+import 'package:debttracker/shared/loading.dart';
 import 'package:debttracker/view-model/payment-viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as chart;
 import 'package:debttracker/shared/constant.dart' as constant;
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 
 class DashboardEarningsCard extends StatefulWidget {
   @override
@@ -18,13 +18,13 @@ class _DashboardEarningsCardState extends State<DashboardEarningsCard> {
   PaymentVM _paymentModel = PaymentVM();
   Logic _logic = Logic();
 
+  
+
   @override
   Widget build(BuildContext context) {
 
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
-
-    final cur = new NumberFormat.simpleCurrency(name: 'PHP');
+    double _width = MediaQuery.of(context).size.width;
+    double _height = MediaQuery.of(context).size.height;
 
     return Stack(
       children: <Widget>[
@@ -32,15 +32,15 @@ class _DashboardEarningsCardState extends State<DashboardEarningsCard> {
           elevation: 1,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(50),
-                  topRight: Radius.circular(10),
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10))),
-          margin: EdgeInsets.only(top: height * 0.1),
+                  topLeft: Radius.circular(_width * 0.05),
+                  topRight: Radius.circular(_width * 0.01),
+                  bottomLeft: Radius.circular(_width * 0.01),
+                  bottomRight: Radius.circular(_width * 0.01))),
+          margin: EdgeInsets.only(top: _height * 0.1),
           color: constant.green,
           child: Container(
-            width: width,
-            height: height * 0.25,
+            width: _width,
+            height: _height * 0.25,
             margin: EdgeInsets.all(30.0),
             child: Row(
               children: <Widget>[
@@ -60,6 +60,7 @@ class _DashboardEarningsCardState extends State<DashboardEarningsCard> {
                       child: StreamBuilder<List<Payment>>(
                         stream: _paymentModel.getEarnings(),
                         builder: (context, snapshot) {
+                          if(!snapshot.hasData) return Container();
                           return FittedBox(
                             fit: BoxFit.contain,
                             child: RichText(
@@ -69,7 +70,7 @@ class _DashboardEarningsCardState extends State<DashboardEarningsCard> {
                                       .copyWith(color: Colors.grey.shade900),
                                   children: [
                                     TextSpan(
-                                        text: '${cur.format(_logic.getDifference(_logic.getEarningsChart(snapshot.data)).abs())}',
+                                        text: '${_logic.formatCurrency(_logic.getDifference(_logic.getEarningsChart(snapshot.data)).abs())}',
                                         style: constant.subtitle
                                             .copyWith(fontWeight: FontWeight.bold)),
                                     _logic.getDifference(_logic.getEarningsChart(snapshot.data)).isNegative == true ?
@@ -85,10 +86,11 @@ class _DashboardEarningsCardState extends State<DashboardEarningsCard> {
                         child: Row(
                           children: <Widget>[
                             SizedBox(
-                              width: width * 0.3,
+                              width: _width * 0.3,
                               child: StreamBuilder<List<Payment>>(
                                 stream: _paymentModel.getEarnings(),
                                 builder: (context, snapshot) {
+                                  if(!snapshot.hasData) return Loading();
                                   var earnings = _logic.getEarningsChart(snapshot.data);
                                   return DashboardChart.earningsChart(earnings);
                                 }
@@ -97,6 +99,7 @@ class _DashboardEarningsCardState extends State<DashboardEarningsCard> {
                             StreamBuilder<List<Payment>>(
                               stream: _paymentModel.getEarnings(),
                               builder: (context, snapshot) {
+                                if(!snapshot.hasData) return Container();
                                 return Row(
                                   children: <Widget>[
                                     SizedBox(width: 20.0),
@@ -117,11 +120,11 @@ class _DashboardEarningsCardState extends State<DashboardEarningsCard> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[
-                                        Text('${cur.format(_logic.getEarningsChart(snapshot.data)[0])}',
+                                        Text('${_logic.formatCurrency(_logic.getEarningsChart(snapshot.data)[0])}',
                                             style: constant.subtitle
                                                 .copyWith(fontSize: 15.0)),
                                         SizedBox(height: 10.0),
-                                        Text('${cur.format(_logic.getEarningsChart(snapshot.data)[1])}',
+                                        Text('${_logic.formatCurrency(_logic.getEarningsChart(snapshot.data)[1])}',
                                             style: constant.subtitle
                                                 .copyWith(fontSize: 15.0))
                                       ],
@@ -140,9 +143,9 @@ class _DashboardEarningsCardState extends State<DashboardEarningsCard> {
         ),
         Positioned(
           right: 20,
-          height: height * 0.35,
+          height: _height * 0.35,
           child: Container(
-              width: width * 0.4,
+              width: _width * 0.4,
               child: SvgPicture.asset('images/services.svg')),
         )
       ],

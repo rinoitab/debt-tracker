@@ -5,7 +5,6 @@ import 'package:debttracker/shared/loading.dart';
 import 'package:debttracker/ui/detail/payment-list.dart';
 import 'package:debttracker/view-model/debt-viewmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
@@ -131,7 +130,7 @@ class DebtListCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       SizedBox(height: 20.0),
-                      Text(new DateFormat("MMM d, yyyy").format(debt.date).toString(),
+                      Text(_logic.formatDate(debt.date),
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey.shade800)),
@@ -140,7 +139,7 @@ class DebtListCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey.shade800)),
-                      Text(_logic.formatCurrency(debt.amount) + ' for ${debt.term} months ${debt.type == 1 ? interval[0] : debt.type == 2 ? interval[1] : interval[2]}',
+                      Text(_logic.formatCurrency(debt.installmentAmount) + ' for ${debt.term} months ${debt.type == 1 ? interval[0] : debt.type == 2 ? interval[1] : interval[2]}',
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey.shade800)),

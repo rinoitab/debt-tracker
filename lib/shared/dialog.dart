@@ -12,6 +12,7 @@ successDialog(BuildContext context, String text, String id, String route) {
     dialog = 'Updated $text successfully.';
 
   showDialog(
+    barrierDismissible: false,
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -65,6 +66,7 @@ successDialog(BuildContext context, String text, String id, String route) {
 
 errorDialog(BuildContext context, String text) {
   showDialog(
+    barrierDismissible: false,
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -94,6 +96,7 @@ errorDialog(BuildContext context, String text) {
 
 generateReceiptDialog(BuildContext context, String text, String reference) {
   showDialog(
+    barrierDismissible: false,
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(

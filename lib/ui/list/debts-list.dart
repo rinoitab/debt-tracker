@@ -5,7 +5,6 @@ import 'package:debttracker/ui/detail/debtor.dart';
 import 'package:debttracker/view-model/combine-stream-vm.dart';
 import 'package:flutter/material.dart';
 import 'package:debttracker/shared/constant.dart' as constant;
-import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class DebtsList extends StatefulWidget {
@@ -74,7 +73,7 @@ class DebtsListTile extends StatelessWidget {
           Navigator.push(
             context, 
             MaterialPageRoute(
-              builder: (context) => DebtorPage(debtor: debts.debtor, id: debts.debtor.id)));
+              builder: (context) => DebtorPage(id: debts.debtor.id)));
         },
         leading: Padding(
           padding: const EdgeInsets.only(right: 20.0),
