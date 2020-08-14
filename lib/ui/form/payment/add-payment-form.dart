@@ -126,18 +126,18 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                       return DropdownMenuItem<String>(
                         value: _debt.id,
                         child: Text(_debt.desc));
-                    })?.toList() ?? [],
-                  isDense: true,
-                  decoration: constant.form.copyWith(
-                    labelText: 'Debt', 
-                    icon: Icon(Icons.shopping_cart,
-                      color: Colors.grey.shade600)),
-                  validator: (value) {
-                    if(value == null) return '';
-                    else return null;
-                  }); 
-            }
-          ),
+                            })?.toList() ?? [],
+                          isDense: true,
+                          decoration: constant.form.copyWith(
+                            labelText: 'Debt', 
+                            icon: Icon(Icons.shopping_cart,
+                              color: Colors.grey.shade600)),
+                          validator: (value) {
+                            if(value == null) return '';
+                            else return null;
+                          }); 
+                    }
+                  ),
           SizedBox(height: 15.0),
           TextFormField(
             controller: _dateController,
